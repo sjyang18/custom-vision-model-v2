@@ -826,7 +826,8 @@
 						"defaultValue": "rawdata3gukxl"
 					},
 					"AOI": {
-						"type": "string"
+						"type": "string",
+						"defaultValue": "0eq0DGLQZUwlj3tEWpUPnSVyyQeiktihjM/8hbCqLT4T31uR1KnF9Xq3pIuhvpDIzRCRy3DihOZL+ASt9mp5Cg=="
 					},
 					"BatchAccountName": {
 						"type": "string",
