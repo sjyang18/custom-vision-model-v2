@@ -1,0 +1,39 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"value": "syansb19-pipeline-syn-ws"
+		},
+		"AOI Batch Storage_connectionString": {
+			"value": ""
+		},
+		"AOI Data Storage Account v2_connectionString": {
+			"value": ""
+		},
+		"AOI Geospatial v2 FS_connectionString": {
+			"value": ""
+		},
+		"syansb19-pipeline-syn-ws-WorkspaceDefaultSqlServer_connectionString": {
+			"value": ""
+		},
+		"AOI Batch_properties_typeProperties_batchUri": {
+			"value": "https://syansb19orcbatchact.eastus.batch.azure.com"
+		},
+		"AOI Batch_properties_typeProperties_poolName": {
+			"value": "data-cpu-pool"
+		},
+		"AOI Batch_properties_typeProperties_accountName": {
+			"value": "syansb19orcbatchact"
+		},
+		"AOI Geospatial v2_properties_typeProperties_url": {
+			"value": "https://rawdata3gukxl.dfs.core.windows.net"
+		},
+		"AOI Pipeline Key Vault_properties_typeProperties_baseUrl": {
+			"value": "https://syansb19-pipeline-kv.vault.azure.net/"
+		},
+		"syansb19-pipeline-syn-ws-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://synhnsyvndfc.dfs.core.windows.net/"
+		}
+	}
+}
