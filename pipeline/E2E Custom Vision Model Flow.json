@@ -91,7 +91,7 @@
 			},
 			"BatchJobName": {
 				"type": "string",
-				"defaultValue": "syansb19-data-cpu-pool"
+				"defaultValue": "syansb05-custom-vision-model-job"
 			},
 			"BatchLocation": {
 				"type": "string",
