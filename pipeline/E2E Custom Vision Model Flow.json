@@ -83,7 +83,7 @@
 			},
 			"AOI": {
 				"type": "string",
-				"defaultValue": "0eq0DGLQZUwlj3tEWpUPnSVyyQeiktihjM/8hbCqLT4T31uR1KnF9Xq3pIuhvpDIzRCRy3DihOZL+ASt9mp5Cg=="
+				"defaultValue": "-91.394824 36.000284 -91.2048 36.1048"
 			},
 			"BatchAccountName": {
 				"type": "string",
