@@ -1,0 +1,56 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"type": "string",
+			"metadata": "Workspace name",
+			"defaultValue": "syansb21-pipeline-syn-ws"
+		}
+	},
+	"variables": {
+		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('workspaceName'), '/Call_AKS')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Web1",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourceGroups/syansb21-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb21-aks2/runCommand?api-version=2022-02-01",
+							"connectVia": {
+								"referenceName": "AutoResolveIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"method": "POST",
+							"body": {
+								"command": "kubectl apply -f test_job.json",
+								"context": "UEsDBBQAAAAIALqKqlTj4wfp/AAAAFYCAAANABwAdGVzdF9qb2IuanNvblVUCQADnwF7Yp8Be2J1eAsAAQT1AQAABAAAAAB9kTFPwzAQhXd+heW5qKm60YmFgQEhIbGgDhfnaAyObfmuVasq/x3bpGmcIjIk8vue3z075zsRHwlev2Mg7ax8ELIGVu3ysJKLX/qtbZP0Z1dfpA4ZGmCI8jkrUbPQYbIxEn+N1gGQBzVSujIDNRqaxOQ2PtfY06l2RzmAPn/7oQB5VNPhzOYNlbMNPX4yhidtNbWYaq+qcRhj5w0wluNmUVmLSQzaxjuJ5GNCROErzn3pu5gbdAe7/x0QdreDMqm1XVJ7syOSe/WXiqp1It3xhgyiF+tqI/CoWVRyZt4W636y2k5zZYhhEPjVGa1O6RQveMBwTevL/xPf/Q9QSwECHgMUAAAACAC6iqpU4+MH6fwAAABWAgAADQAYAAAAAAABAAAApIEAAAAAdGVzdF9qb2IuanNvblVUBQADnwF7YnV4CwABBPUBAAAEAAAAAFBLBQYAAAAAAQABAFMAAABDAQAAAAA="
+							},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://management.core.windows.net"
+							}
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": []
+		}
+	]
+}
