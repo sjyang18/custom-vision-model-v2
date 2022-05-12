@@ -1,0 +1,12 @@
+{
+	"name": "GetAksJobZipFile",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AksJobZipFile",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"schema": []
+	}
+}
