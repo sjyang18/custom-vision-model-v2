@@ -51,7 +51,7 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"url": "https://rawdatadppktx.blob.core.windows.net/testme/batch/base64_encoded_test_job_body.txt",
+					"url": "https://rawdatadppktx.blob.core.windows.net/testme/batch/base64_cmd_body_p.txt",
 					"connectVia": {
 						"referenceName": "AutoResolveIntegrationRuntime",
 						"type": "IntegrationRuntimeReference"
