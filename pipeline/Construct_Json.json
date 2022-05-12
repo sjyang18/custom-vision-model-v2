@@ -1,0 +1,27 @@
+{
+	"name": "Construct_Json",
+	"properties": {
+		"activities": [
+			{
+				"name": "Gen_JsonBody",
+				"description": "",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "JsonBody",
+					"value": {
+						"value": "@concat(\n'{\\n',\n'\\\"command\\\" : \\\"', 'kubectl apply -f test_job.json', '\\\" ',\n'}'\n)",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"JsonBody": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
