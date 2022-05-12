@@ -1,0 +1,21 @@
+{
+	"name": "AksJobZipFile",
+	"properties": {
+		"annotations": [],
+		"type": "RestService",
+		"typeProperties": {
+			"url": "https://rawdatadppktx.blob.core.windows.net/testme/batch/test_job.zip",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "ManagedServiceIdentity",
+			"aadResourceId": "https://storage.azure.com/",
+			"credential": {
+				"referenceName": "Credential-Orc-umi",
+				"type": "CredentialReference"
+			}
+		},
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
