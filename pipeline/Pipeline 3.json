@@ -33,7 +33,7 @@
 			}
 		],
 		"parameters": {
-			"file_name": {
+			"filename": {
 				"type": "string",
 				"defaultValue": "test_job.zip"
 			}
