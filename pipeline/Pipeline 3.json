@@ -3,8 +3,31 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Notebook1",
-				"type": "SynapseNotebook",
+				"name": "Gen Kubectl Spec",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "KubeCmdSpec",
+					"value": "{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"testjob\",\n      \"namespace\": \"tests\",\n      \"labels\": {\n        \"app\": \"busybox\"\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 10,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"busybox\",\n              \"image\": \"busybox\",\n              \"args\": [\n                \"bin/sh\",\n                \"-c\",\n                \"echo test;sleep 30; exit 0\"\n              ]\n            }\n          ],\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n}"
+				}
+			},
+			{
+				"name": "Gen Kubectl Rest API payload",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "KubeCmdToSend",
+					"value": {
+						"value": "@concat(\n'{\\n',\n'\\\"command\\\" : \\\"', 'kubectl apply -f test_job.json', '\\\", ',\n'\\\"content\\\" : \\\"', 'kubectl apply -f test_job.json', '\\\" ',\n'}'\n)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Azure Function1",
+				"type": "AzureFunctionActivity",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "7.00:00:00",
@@ -14,32 +37,20 @@
 					"secureInput": false
 				},
 				"userProperties": [],
-				"typeProperties": {
-					"notebook": {
-						"referenceName": "ConvertBase64",
-						"type": "NotebookReference"
-					},
-					"parameters": {
-						"NotebookOutput": {
-							"value": ""
-						}
-					},
-					"snapshot": true,
-					"sparkPool": {
-						"referenceName": "poollofkzx",
-						"type": "BigDataPoolReference"
-					}
+				"linkedServiceName": {
+					"referenceName": "AzureFunction1",
+					"type": "LinkedServiceReference"
 				}
 			}
 		],
-		"parameters": {
-			"filename": {
-				"type": "string",
-				"defaultValue": "test_job.zip"
-			}
-		},
 		"variables": {
-			"NotebookOutput": {
+			"KubeCmdSpec": {
+				"type": "String"
+			},
+			"KubeCmdToSend": {
+				"type": "String"
+			},
+			"KubeCmdSpecInBase64Encoded": {
 				"type": "String"
 			}
 		},
