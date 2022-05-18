@@ -15,20 +15,34 @@
 			{
 				"name": "Gen Kubectl Rest API payload",
 				"type": "SetVariable",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Set SpecZipBase64Encoded",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "KubeCmdToSend",
 					"value": {
-						"value": "@concat(\n'{\\n',\n'\\\"command\\\" : \\\"', 'kubectl apply -f test_job.json', '\\\", ',\n'\\\"content\\\" : \\\"', 'kubectl apply -f test_job.json', '\\\" ',\n'}'\n)",
+						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl apply -f test_job.json', '\",',\n'\"context\" : \"', variables('KubeCmdSpecInBase64Encoded'), '\"',\n'}'\n)",
 						"type": "Expression"
 					}
 				}
 			},
 			{
-				"name": "Azure Function1",
+				"name": "Gend SpecZipBase64Encoding Func",
 				"type": "AzureFunctionActivity",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Gen Kubectl Spec",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "7.00:00:00",
 					"retry": 0,
@@ -37,9 +51,73 @@
 					"secureInput": false
 				},
 				"userProperties": [],
+				"typeProperties": {
+					"functionName": "base64EncodedZipContent",
+					"method": "POST",
+					"body": {
+						"value": "@variables('KubeCmdSpec')",
+						"type": "Expression"
+					}
+				},
 				"linkedServiceName": {
-					"referenceName": "AzureFunction1",
+					"referenceName": "GenBase64Encoding",
 					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Set SpecZipBase64Encoded",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Gend SpecZipBase64Encoding Func",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "KubeCmdSpecInBase64Encoded",
+					"value": {
+						"value": "@activity('Gend SpecZipBase64Encoding Func').output.Response",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Invoke Workload in AKS",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Gen Kubectl Rest API payload",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourceGroups/syansb21-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb21-aks2/runCommand?api-version=2022-02-01",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"body": {
+						"value": "@variables('KubeCmdToSend')",
+						"type": "Expression"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://management.core.windows.net"
+					}
 				}
 			}
 		],
