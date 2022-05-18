@@ -57,42 +57,6 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('workspaceName'), '/AKS_run_example')]",
-			"type": "Microsoft.Synapse/workspaces/pipelines",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"activities": [
-					{
-						"name": "Gen Kubectl Spec",
-						"type": "SetVariable",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "KubeCmdSpec",
-							"value": "{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"testjob\",\n      \"namespace\": \"tests\",\n      \"labels\": {\n        \"app\": \"busybox\"\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 10,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"busybox\",\n              \"image\": \"busybox\",\n              \"args\": [\n                \"bin/sh\",\n                \"-c\",\n                \"echo test;sleep 30; exit 0\"\n              ]\n            }\n          ],\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n}"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"variables": {
-					"KubeCmdSpec": {
-						"type": "String"
-					},
-					"KubeCmdToSend": {
-						"type": "String"
-					},
-					"KubeCmdSpecInBase64Encoded": {
-						"type": "String"
-					}
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/Custom Vision Model Transforms v2')]",
 			"type": "Microsoft.Synapse/workspaces/pipelines",
 			"apiVersion": "2019-06-01-preview",
@@ -1436,6 +1400,155 @@
 			},
 			"dependsOn": [],
 			"location": "eastus"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AKS_run_example')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Gen Kubectl Spec",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "KubeCmdSpec",
+							"value": "{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"testjob\",\n      \"namespace\": \"tests\",\n      \"labels\": {\n        \"app\": \"busybox\"\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 10,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"busybox\",\n              \"image\": \"busybox\",\n              \"args\": [\n                \"bin/sh\",\n                \"-c\",\n                \"echo test;sleep 30; exit 0\"\n              ]\n            }\n          ],\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n}"
+						}
+					},
+					{
+						"name": "Gen Kubectl Rest API payload",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Set SpecZipBase64Encoded",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "KubeCmdToSend",
+							"value": {
+								"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl apply -f test_job.json', '\",',\n'\"context\" : \"', variables('KubeCmdSpecInBase64Encoded'), '\"',\n'}'\n)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Gend SpecZipBase64Encoding Func",
+						"type": "AzureFunctionActivity",
+						"dependsOn": [
+							{
+								"activity": "Gen Kubectl Spec",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"functionName": "base64EncodedZipContent",
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"value": "@variables('KubeCmdSpec')",
+								"type": "Expression"
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "GenBase64Encoding",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Set SpecZipBase64Encoded",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Gend SpecZipBase64Encoding Func",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "KubeCmdSpecInBase64Encoded",
+							"value": {
+								"value": "@activity('Gend SpecZipBase64Encoding Func').output.Response",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Invoke Workload in AKS",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Gen Kubectl Rest API payload",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourceGroups/syansb21-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb21-aks2/runCommand?api-version=2022-02-01",
+							"connectVia": {
+								"referenceName": "AutoResolveIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"value": "@variables('KubeCmdToSend')",
+								"type": "Expression"
+							},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://management.core.windows.net"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"KubeCmdSpec": {
+						"type": "String"
+					},
+					"KubeCmdToSend": {
+						"type": "String"
+					},
+					"KubeCmdSpecInBase64Encoded": {
+						"type": "String"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/GenBase64Encoding')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
 		}
 	]
 }
