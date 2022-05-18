@@ -15,5 +15,6 @@
 			},
 			"authentication": "Anonymous"
 		}
-	}
+	},
+	"type": "Microsoft.Synapse/workspaces/linkedservices"
 }
