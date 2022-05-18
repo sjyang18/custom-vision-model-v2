@@ -20,7 +20,7 @@
 						"type": "NotebookReference"
 					},
 					"parameters": {
-						"": {
+						"NotebookOutput": {
 							"value": ""
 						}
 					},
@@ -36,6 +36,11 @@
 			"filename": {
 				"type": "string",
 				"defaultValue": "test_job.zip"
+			}
+		},
+		"variables": {
+			"NotebookOutput": {
+				"type": "String"
 			}
 		},
 		"annotations": []
