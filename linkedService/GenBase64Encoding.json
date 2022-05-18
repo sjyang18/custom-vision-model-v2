@@ -13,8 +13,7 @@
 				},
 				"secretName": "GenBase64EcondingKey"
 			},
-			"authentication": "MSI",
-			"resourceId": ""
+			"authentication": "Anonymous"
 		},
 		"connectVia": {
 			"referenceName": "AutoResolveIntegrationRuntime",
