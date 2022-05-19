@@ -134,7 +134,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@equals(variables('KubeJobStatusCheckResult'),\n['No resources found in tests namespace.\\n']\n)",
+						"value": "@contains(variables('KubeJobStatusCheckResult'),'No resources found in tests namespace.')",
 						"type": "Expression"
 					},
 					"activities": [
