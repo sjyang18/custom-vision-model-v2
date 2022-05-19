@@ -141,7 +141,14 @@
 						{
 							"name": "Check Job Status",
 							"type": "WebActivity",
-							"dependsOn": [],
+							"dependsOn": [
+								{
+									"activity": "Wait",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
 							"policy": {
 								"timeout": "7.00:00:00",
 								"retry": 0,
@@ -190,17 +197,10 @@
 						{
 							"name": "Wait",
 							"type": "Wait",
-							"dependsOn": [
-								{
-									"activity": "Set JobStatus",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
+							"dependsOn": [],
 							"userProperties": [],
 							"typeProperties": {
-								"waitTimeInSeconds": 10
+								"waitTimeInSeconds": 15
 							}
 						}
 					],
