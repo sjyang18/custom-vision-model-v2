@@ -9,7 +9,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "KubeCmdSpec",
-					"value": "{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"testjob\",\n      \"namespace\": \"tests\",\n      \"labels\": {\n        \"app\": \"busybox\"\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 10,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"busybox\",\n              \"image\": \"busybox\",\n              \"args\": [\n                \"bin/sh\",\n                \"-c\",\n                \"echo test;sleep 30; exit 0\"\n              ]\n            }\n          ],\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n}"
+					"value": "{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"testjob\",\n      \"namespace\": \"tests\",\n      \"labels\": {\n        \"app\": \"busybox\"\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 10,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"busybox\",\n              \"image\": \"busybox\",\n              \"args\": [\n                \"bin/sh\",\n                \"-c\",\n                \"echo test;sleep 60; exit 0\"\n              ]\n            }\n          ],\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n}"
 				}
 			},
 			{
@@ -119,6 +119,113 @@
 						"resource": "https://management.core.windows.net"
 					}
 				}
+			},
+			{
+				"name": "Until1",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "Set KubeJobStatusCheckCmd",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(variables('KubeJobStatusCheckResult'),\n['No resources found in tests namespace.\\n']\n)",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Check Job Status",
+							"type": "WebActivity",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"url": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourceGroups/syansb21-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb21-aks2/runCommand?api-version=2022-02-01",
+								"connectVia": {
+									"referenceName": "AutoResolveIntegrationRuntime",
+									"type": "IntegrationRuntimeReference"
+								},
+								"method": "POST",
+								"body": {
+									"value": "@variables('KubeJobStatusCheckCmdToSend')",
+									"type": "Expression"
+								},
+								"authentication": {
+									"type": "MSI",
+									"resource": "https://management.core.windows.net"
+								}
+							}
+						},
+						{
+							"name": "Set JobStatus",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Check Job Status",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "KubeJobStatusCheckResult",
+								"value": {
+									"value": "@activity('Check Job Status').output['properties']['logs']\n\n",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Wait",
+							"type": "Wait",
+							"dependsOn": [
+								{
+									"activity": "Set JobStatus",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 10
+							}
+						}
+					],
+					"timeout": "3.00:00:00"
+				}
+			},
+			{
+				"name": "Set KubeJobStatusCheckCmd",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Invoke Workload in AKS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "KubeJobStatusCheckCmdToSend",
+					"value": {
+						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl -n tests get jobs', '\"',\n'}'\n)",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"variables": {
@@ -129,6 +236,12 @@
 				"type": "String"
 			},
 			"KubeCmdSpecInBase64Encoded": {
+				"type": "String"
+			},
+			"KubeJobStatusCheckCmdToSend": {
+				"type": "String"
+			},
+			"KubeJobStatusCheckResult": {
 				"type": "String"
 			}
 		},
