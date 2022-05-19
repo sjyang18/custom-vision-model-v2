@@ -1,0 +1,72 @@
+{
+	"name": "GenKubectlSpec",
+	"properties": {
+		"activities": [
+			{
+				"name": "Gen Kubectl Spec",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set KubeCmdSpec template",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "KubeCmdSpec",
+					"value": {
+						"value": "@replace(variables('KubeCmdSpecTemplate'), '__run_id__', pipeline().parameters.run_id)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set KubeCmdSpec template",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "KubeCmdSpecTemplate",
+					"value": "{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"testjob\",\n      \"namespace\": \"tests\",\n      \"labels\": {\n        \"app\": ___run_id___\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 10,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"busybox\",\n              \"image\": \"busybox\",\n              \"args\": ___run__args___\n            }\n          ],\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n}"
+				}
+			}
+		],
+		"parameters": {
+			"run_id": {
+				"type": "string",
+				"defaultValue": "123456789abcd"
+			},
+			"run_args": {
+				"type": "string",
+				"defaultValue": [
+					"bin/sh",
+					"-c",
+					"echo test;sleep 600; exit 0"
+				]
+			}
+		},
+		"variables": {
+			"KubeCmdSpec": {
+				"type": "String"
+			},
+			"KubeCmdToSend": {
+				"type": "String"
+			},
+			"KubeCmdSpecInBase64Encoded": {
+				"type": "String"
+			},
+			"KubeJobStatusCheckCmdToSend": {
+				"type": "String"
+			},
+			"KubeJobStatusCheckResult": {
+				"type": "String"
+			},
+			"KubeCmdSpecTemplate": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
