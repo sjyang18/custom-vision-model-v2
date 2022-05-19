@@ -43,7 +43,7 @@
 				}
 			},
 			{
-				"name": "Gend SpecZipBase64Encoding Func",
+				"name": "Gen SpecZipBase64Encoding Func",
 				"type": "AzureFunctionActivity",
 				"dependsOn": [
 					{
@@ -79,7 +79,7 @@
 				"type": "SetVariable",
 				"dependsOn": [
 					{
-						"activity": "Gend SpecZipBase64Encoding Func",
+						"activity": "Gen SpecZipBase64Encoding Func",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -89,7 +89,7 @@
 				"typeProperties": {
 					"variableName": "KubeCmdSpecInBase64Encoded",
 					"value": {
-						"value": "@activity('Gend SpecZipBase64Encoding Func').output.Response",
+						"value": "@activity('Gen SpecZipBase64Encoding Func').output.Response",
 						"type": "Expression"
 					}
 				}
@@ -244,7 +244,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "KubeCmdSpecTemplate",
-					"value": "{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"testjob\",\n      \"namespace\": \"tests\",\n      \"labels\": {\n        \"app\": \"__run_id__\"\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 10,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"busybox\",\n              \"image\": \"busybox\",\n              \"args\":  [\n                \"bin/sh\",\n                \"-c\",\n                \"echo test;sleep __run_args__ ; exit 0\"\n              ]\n            }\n          ],\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n}"
+					"value": "{\n  \"apiVersion\": \"batch/v1\",\n  \"kind\": \"Job\",\n  \"metadata\": {\n    \"name\": \"testjob\",\n    \"namespace\": \"tests\",\n    \"labels\": {\n      \"app\": \"__run_id__\"\n    }\n  },\n  \"spec\": {\n    \"ttlSecondsAfterFinished\": 10,\n    \"template\": {\n      \"spec\": {\n        \"containers\": [\n          {\n            \"name\": \"busybox\",\n            \"image\": \"busybox\",\n            \"args\": [\n              \"bin/sh\",\n              \"-c\",\n              \"echo \\\"test job running on ${HOSTNAME}\\\" >> /mnt/azure/log.txt;sleep __run_args__; echo \\\"test job on ${HOSTNAME} completes\\\" >> /mnt/azure/log.txt;exit 0\"\n            ],\n            \"volumeMounts\": [\n              {\n                \"name\": \"azure\",\n                \"mountPath\": \"/mnt/azure\"\n              }\n            ]\n          }\n        ],\n        \"volumes\": [\n          {\n            \"name\": \"azure\",\n            \"persistentVolumeClaim\": {\n              \"claimName\": \"syansb21-tests-testshare\"\n            }\n          }\n        ],\n        \"restartPolicy\": \"Never\"\n      }\n    }\n  }\n}"
 				}
 			}
 		],
