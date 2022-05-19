@@ -16,7 +16,10 @@
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "KubeCmdSpec",
-					"value": "{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"testjob\",\n      \"namespace\": \"tests\",\n      \"labels\": {\n        \"app\": \"busybox\"\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 10,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"busybox\",\n              \"image\": \"busybox\",\n              \"args\": [\n                \"bin/sh\",\n                \"-c\",\n                \"echo test;sleep 300; exit 0\"\n              ]\n            }\n          ],\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n}"
+					"value": {
+						"value": "@replace(\nreplace(variables('KubeCmdSpecTemplate'), '__run_id__', pipeline().RunId),\n'__run_args__', pipeline().parameters.run_args)",
+						"type": "Expression"
+					}
 				}
 			},
 			{
@@ -229,7 +232,7 @@
 				"typeProperties": {
 					"variableName": "KubeJobStatusCheckCmdToSend",
 					"value": {
-						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl -n tests get jobs', '\"',\n'}'\n)",
+						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl -n tests get jobs --selector app=', pipeline().RunId ,' \"',\n'}'\n)",
 						"type": "Expression"
 					}
 				}
@@ -241,22 +244,14 @@
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "KubeCmdSpecTemplate",
-					"value": "{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"testjob\",\n      \"namespace\": \"tests\",\n      \"labels\": {\n        \"app\": ___run_id___\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 10,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"busybox\",\n              \"image\": \"busybox\",\n              \"args\": ___run__args___\n            }\n          ],\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n}"
+					"value": "{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"testjob\",\n      \"namespace\": \"tests\",\n      \"labels\": {\n        \"app\": \"__run_id__\"\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 10,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"busybox\",\n              \"image\": \"busybox\",\n              \"args\":  [\n                \"bin/sh\",\n                \"-c\",\n                \"echo test;sleep __run_args__ ; exit 0\"\n              ]\n            }\n          ],\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n}"
 				}
 			}
 		],
 		"parameters": {
-			"run_id": {
-				"type": "string",
-				"defaultValue": "123456789abcd"
-			},
 			"run_args": {
 				"type": "string",
-				"defaultValue": [
-					"bin/sh",
-					"-c",
-					"echo test;sleep 600; exit 0"
-				]
+				"defaultValue": "300"
 			}
 		},
 		"variables": {
