@@ -1,0 +1,273 @@
+{
+	"name": "Custom_Vision_Offline_UnitTest",
+	"properties": {
+		"activities": [
+			{
+				"name": "Gen Kubectl Spec",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set KubeCmdSpec template",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "KubeCmdSpec",
+					"value": {
+						"value": "@replace(variables('KubeCmdSpecTemplate'), '__run_id__', pipeline().RunId)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Gen Kubectl Rest API payload",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set SpecZipBase64Encoded",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "KubeCmdToSend",
+					"value": {
+						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl apply -f test_job.json', '\",',\n'\"context\" : \"', variables('KubeCmdSpecInBase64Encoded'), '\"',\n'}'\n)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Gen SpecZipBase64Encoding Func",
+				"type": "AzureFunctionActivity",
+				"dependsOn": [
+					{
+						"activity": "Gen Kubectl Spec",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"functionName": "base64EncodedZipContent",
+					"method": "POST",
+					"body": {
+						"value": "@variables('KubeCmdSpec')",
+						"type": "Expression"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "GenBase64Encoding",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Set SpecZipBase64Encoded",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Gen SpecZipBase64Encoding Func",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "KubeCmdSpecInBase64Encoded",
+					"value": {
+						"value": "@activity('Gen SpecZipBase64Encoding Func').output.Response",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Invoke Workload in AKS",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Gen Kubectl Rest API payload",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourceGroups/syansb21-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb21-aks2/runCommand?api-version=2022-02-01",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "POST",
+					"body": {
+						"value": "@variables('KubeCmdToSend')",
+						"type": "Expression"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://management.core.windows.net"
+					}
+				}
+			},
+			{
+				"name": "Until1",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "Set KubeJobStatusCheckCmd",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@contains(variables('KubeJobStatusCheckResult'),'No resources found')",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Check Job Status",
+							"type": "WebActivity",
+							"dependsOn": [
+								{
+									"activity": "Wait",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "7.00:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"url": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourceGroups/syansb21-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb21-aks2/runCommand?api-version=2022-02-01",
+								"connectVia": {
+									"referenceName": "AutoResolveIntegrationRuntime",
+									"type": "IntegrationRuntimeReference"
+								},
+								"method": "POST",
+								"body": {
+									"value": "@variables('KubeJobStatusCheckCmdToSend')",
+									"type": "Expression"
+								},
+								"authentication": {
+									"type": "MSI",
+									"resource": "https://management.core.windows.net"
+								}
+							}
+						},
+						{
+							"name": "Set JobStatus",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Check Job Status",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "KubeJobStatusCheckResult",
+								"value": {
+									"value": "@activity('Check Job Status').output['properties']['logs']\n\n",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Wait",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 15
+							}
+						}
+					],
+					"timeout": "3.00:00:00"
+				}
+			},
+			{
+				"name": "Set KubeJobStatusCheckCmd",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Invoke Workload in AKS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "KubeJobStatusCheckCmdToSend",
+					"value": {
+						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl -n tests get jobs --selector run_id=', pipeline().RunId ,' \"',\n'}'\n)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set KubeCmdSpec template",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "KubeCmdSpecTemplate",
+					"value": "{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"aoi-cv-task-xyz\",\n      \"namespace\": \"tests\",\n      \"labels\": {\n        \"run_id\": \"__run_id__\"\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 10,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"aoi-cv-task-xyz\",\n              \"image\": \"ghcr.io/azure/azure-orbital-analytics-samples/custom_vision_offline:latest\",\n              \"env\": [\n                {\n                  \"name\": \"APP_INPUT_DIR\",\n                  \"value\": \"/data/testme/in\"\n                },\n                {\n                  \"name\": \"APP_OUTPUT_DIR\",\n                  \"value\": \"/data/testme/out\"\n                },\n                {\n                  \"name\": \"APP_CONFIG_DIR\",\n                  \"value\": \"/data/testme/config.json\"\n                }\n              ],\n              \"volumeMounts\": [\n                {\n                  \"name\": \"azure\",\n                  \"mountPath\": \"/data\"\n                }\n              ]\n            }\n          ],\n          \"volumes\": [\n            {\n              \"name\": \"azure\",\n              \"persistentVolumeClaim\": {\n                \"claimName\": \"syansb21-tests-testshare\"\n              }\n            }\n          ],\n          \"automountServiceAccountToken\": false,\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n  }"
+				}
+			}
+		],
+		"variables": {
+			"KubeCmdSpec": {
+				"type": "String"
+			},
+			"KubeCmdToSend": {
+				"type": "String"
+			},
+			"KubeCmdSpecInBase64Encoded": {
+				"type": "String"
+			},
+			"KubeJobStatusCheckCmdToSend": {
+				"type": "String"
+			},
+			"KubeJobStatusCheckResult": {
+				"type": "String"
+			},
+			"KubeCmdSpecTemplate": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}
