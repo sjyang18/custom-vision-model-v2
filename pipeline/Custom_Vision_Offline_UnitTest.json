@@ -235,7 +235,7 @@
 				"typeProperties": {
 					"variableName": "KubeJobStatusCheckCmdToSend",
 					"value": {
-						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl -n vison get jobs --selector run_id=', pipeline().RunId ,' \"',\n'}'\n)",
+						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl -n vision get jobs --selector run_id=', pipeline().RunId ,' \"',\n'}'\n)",
 						"type": "Expression"
 					}
 				}
