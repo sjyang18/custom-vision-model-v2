@@ -443,31 +443,11 @@
 				}
 			},
 			{
-				"name": "Gen Kubectl Rest API payload",
-				"type": "SetVariable",
-				"dependsOn": [
-					{
-						"activity": "Gen Kubectl Spec",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "KubeCmdToSend",
-					"value": {
-						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl apply -f aoi-cv-task.json', '\",',\n'\"context\" : \"', variables('KubeCmdSpecInBase64Encoded'), '\"',\n'}'\n)",
-						"type": "Expression"
-					}
-				}
-			},
-			{
 				"name": "Gen SpecZipBase64Encoding Func",
 				"type": "AzureFunctionActivity",
 				"dependsOn": [
 					{
-						"activity": "Gen Kubectl Rest API payload",
+						"activity": "Gen Kubectl Spec",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -668,9 +648,6 @@
 				"type": "String"
 			},
 			"KubeCmdSpecInBase64Encoded": {
-				"type": "String"
-			},
-			"KubeJobStatusCheckCmdToSend": {
 				"type": "String"
 			},
 			"KubeJobStatusCheckResult": {
