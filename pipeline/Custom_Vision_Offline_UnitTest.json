@@ -23,26 +23,6 @@
 				}
 			},
 			{
-				"name": "Gen Kubectl Rest API payload",
-				"type": "SetVariable",
-				"dependsOn": [
-					{
-						"activity": "Set SpecZipBase64Encoded",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "KubeCmdToSend",
-					"value": {
-						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl apply -f aoi-cv-task.json', '\",',\n'\"context\" : \"', variables('KubeCmdSpecInBase64Encoded'), '\"',\n'}'\n)",
-						"type": "Expression"
-					}
-				}
-			},
-			{
 				"name": "Gen SpecZipBase64Encoding Func",
 				"type": "AzureFunctionActivity",
 				"dependsOn": [
@@ -102,7 +82,7 @@
 				"type": "WebActivity",
 				"dependsOn": [
 					{
-						"activity": "Gen Kubectl Rest API payload",
+						"activity": "Set SpecZipBase64Encoded",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -124,7 +104,7 @@
 					},
 					"method": "POST",
 					"body": {
-						"value": "@variables('KubeCmdToSend')",
+						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl apply -f aoi-cv-task.json', '\",',\n'\"context\" : \"', variables('KubeCmdSpecInBase64Encoded'), '\"',\n'}'\n)",
 						"type": "Expression"
 					},
 					"authentication": {
@@ -138,7 +118,7 @@
 				"type": "Until",
 				"dependsOn": [
 					{
-						"activity": "Set KubeJobStatusCheckCmd",
+						"activity": "Invoke Workload in AKS",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -178,7 +158,7 @@
 								},
 								"method": "POST",
 								"body": {
-									"value": "@variables('KubeJobStatusCheckCmdToSend')",
+									"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl -n vision get jobs --selector run_id=', pipeline().RunId ,' \"',\n'}'\n)",
 									"type": "Expression"
 								},
 								"authentication": {
@@ -218,26 +198,6 @@
 						}
 					],
 					"timeout": "3.00:00:00"
-				}
-			},
-			{
-				"name": "Set KubeJobStatusCheckCmd",
-				"type": "SetVariable",
-				"dependsOn": [
-					{
-						"activity": "Invoke Workload in AKS",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "KubeJobStatusCheckCmdToSend",
-					"value": {
-						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl -n vision get jobs --selector run_id=', pipeline().RunId ,' \"',\n'}'\n)",
-						"type": "Expression"
-					}
 				}
 			},
 			{
