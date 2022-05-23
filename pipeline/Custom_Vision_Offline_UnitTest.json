@@ -37,7 +37,7 @@
 				"typeProperties": {
 					"variableName": "KubeCmdToSend",
 					"value": {
-						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl apply -f test_job.json', '\",',\n'\"context\" : \"', variables('KubeCmdSpecInBase64Encoded'), '\"',\n'}'\n)",
+						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl apply -f aoi-cv-task.json', '\",',\n'\"context\" : \"', variables('KubeCmdSpecInBase64Encoded'), '\"',\n'}'\n)",
 						"type": "Expression"
 					}
 				}
@@ -64,6 +64,9 @@
 				"typeProperties": {
 					"functionName": "base64EncodedZipContent",
 					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
 					"body": {
 						"value": "@variables('KubeCmdSpec')",
 						"type": "Expression"
@@ -232,7 +235,7 @@
 				"typeProperties": {
 					"variableName": "KubeJobStatusCheckCmdToSend",
 					"value": {
-						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl -n tests get jobs --selector run_id=', pipeline().RunId ,' \"',\n'}'\n)",
+						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl -n vison get jobs --selector run_id=', pipeline().RunId ,' \"',\n'}'\n)",
 						"type": "Expression"
 					}
 				}
@@ -244,7 +247,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"variableName": "KubeCmdSpecTemplate",
-					"value": "{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"aoi-cv-task-xyz\",\n      \"namespace\": \"tests\",\n      \"labels\": {\n        \"run_id\": \"__run_id__\"\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 10,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"aoi-cv-task-xyz\",\n              \"image\": \"ghcr.io/azure/azure-orbital-analytics-samples/custom_vision_offline:latest\",\n              \"env\": [\n                {\n                  \"name\": \"APP_INPUT_DIR\",\n                  \"value\": \"/data/testme/in\"\n                },\n                {\n                  \"name\": \"APP_OUTPUT_DIR\",\n                  \"value\": \"/data/testme/out\"\n                },\n                {\n                  \"name\": \"APP_CONFIG_DIR\",\n                  \"value\": \"/data/testme/config.json\"\n                }\n              ],\n              \"volumeMounts\": [\n                {\n                  \"name\": \"azure\",\n                  \"mountPath\": \"/data\"\n                }\n              ]\n            }\n          ],\n          \"volumes\": [\n            {\n              \"name\": \"azure\",\n              \"persistentVolumeClaim\": {\n                \"claimName\": \"syansb21-tests-testshare\"\n              }\n            }\n          ],\n          \"automountServiceAccountToken\": false,\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n  }"
+					"value": "{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"aoi-cv-task\",\n      \"namespace\": \"vision\",\n      \"labels\": {\n        \"run_id\": \"__run_id__\"\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 10,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"aoi-cv-task-xyz\",\n              \"image\": \"ghcr.io/azure/azure-orbital-analytics-samples/custom_vision_offline:latest\",\n              \"env\": [\n                {\n                  \"name\": \"APP_INPUT_DIR\",\n                  \"value\": \"/data/testme/in\"\n                },\n                {\n                  \"name\": \"APP_OUTPUT_DIR\",\n                  \"value\": \"/data/testme/out\"\n                },\n                {\n                  \"name\": \"APP_CONFIG_DIR\",\n                  \"value\": \"/data/testme/config.json\"\n                }\n              ],\n              \"volumeMounts\": [\n                {\n                  \"name\": \"azure\",\n                  \"mountPath\": \"/data\"\n                }\n              ]\n            }\n          ],\n          \"volumes\": [\n            {\n              \"name\": \"azure\",\n              \"persistentVolumeClaim\": {\n                \"claimName\": \"syansb21-vision-fileshare\"\n              }\n            }\n          ],\n          \"automountServiceAccountToken\": false,\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n}"
 				}
 			}
 		],
