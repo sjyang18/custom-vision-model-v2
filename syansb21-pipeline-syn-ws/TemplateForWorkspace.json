@@ -1441,11 +1441,46 @@
 						}
 					},
 					{
-						"name": "Gen Kubectl Spec",
+						"name": "Gen SpecZipBase64Encoding Func",
+						"type": "AzureFunctionActivity",
+						"dependsOn": [
+							{
+								"activity": "Gen Kubectl Task Cmd",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"functionName": "base64EncodedZipContent",
+							"method": "POST",
+							"headers": {
+								"Content-Type": "application/json"
+							},
+							"body": {
+								"value": "@json(variables('KubeTaskJob'))",
+								"type": "Expression"
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "GenBase64Encoding",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "Set SpecZipBase64Encoded",
 						"type": "SetVariable",
 						"dependsOn": [
 							{
-								"activity": "Set KubeCmdSpec template",
+								"activity": "Gen SpecZipBase64Encoding Func",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -1453,15 +1488,140 @@
 						],
 						"userProperties": [],
 						"typeProperties": {
-							"variableName": "KubeCmdSpec",
+							"variableName": "KubeCmdSpecInBase64Encoded",
 							"value": {
-								"value": "@replace(variables('KubeCmdSpecTemplate'), '__run_id__', pipeline().RunId)",
+								"value": "@activity('Gen SpecZipBase64Encoding Func').output.Response",
 								"type": "Expression"
 							}
 						}
 					},
 					{
-						"name": "Set KubeCmdSpec template",
+						"name": "Invoke Workload in AKS",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Set SpecZipBase64Encoded",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourceGroups/syansb21-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb21-aks2/runCommand?api-version=2022-02-01",
+							"connectVia": {
+								"referenceName": "AutoResolveIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"value": "@json(concat(\n'{',\n'\"command\" : \"', 'kubectl apply -f aoi-cv-task.json', '\",',\n'\"context\" : \"', variables('KubeCmdSpecInBase64Encoded'), '\"',\n'}'\n))",
+								"type": "Expression"
+							},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://management.core.windows.net"
+							}
+						}
+					},
+					{
+						"name": "Until1",
+						"type": "Until",
+						"dependsOn": [
+							{
+								"activity": "Invoke Workload in AKS",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@contains(variables('KubeJobStatusCheckResult'),'No resources found')",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Check Job Status",
+									"type": "WebActivity",
+									"dependsOn": [
+										{
+											"activity": "Wait",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"url": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourceGroups/syansb21-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb21-aks2/runCommand?api-version=2022-02-01",
+										"connectVia": {
+											"referenceName": "AutoResolveIntegrationRuntime",
+											"type": "IntegrationRuntimeReference"
+										},
+										"method": "POST",
+										"headers": {},
+										"body": {
+											"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl -n vision get jobs --selector run_id=', pipeline().RunId ,' \"',\n'}'\n)",
+											"type": "Expression"
+										},
+										"authentication": {
+											"type": "MSI",
+											"resource": "https://management.core.windows.net"
+										}
+									}
+								},
+								{
+									"name": "Set JobStatus",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "Check Job Status",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "KubeJobStatusCheckResult",
+										"value": {
+											"value": "@activity('Check Job Status').output['properties']['logs']\n\n",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Wait",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 15
+									}
+								}
+							],
+							"timeout": "3.00:00:00"
+						}
+					},
+					{
+						"name": "Gen Kubectl Task Cmd",
 						"type": "SetVariable",
 						"dependsOn": [
 							{
@@ -1479,226 +1639,9 @@
 						],
 						"userProperties": [],
 						"typeProperties": {
-							"variableName": "KubeCmdSpecTemplate",
-							"value": "{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"aoi-cv-task\",\n      \"namespace\": \"vision\",\n      \"labels\": {\n        \"run_id\": \"__run_id__\"\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 10,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"aoi-cv-task-xyz\",\n              \"image\": \"ghcr.io/azure/azure-orbital-analytics-samples/custom_vision_offline:latest\",\n              \"env\": [\n                {\n                  \"name\": \"APP_INPUT_DIR\",\n                  \"value\": \"/data/testme/in\"\n                },\n                {\n                  \"name\": \"APP_OUTPUT_DIR\",\n                  \"value\": \"/data/testme/out\"\n                },\n                {\n                  \"name\": \"APP_CONFIG_DIR\",\n                  \"value\": \"/data/testme/config.json\"\n                }\n              ],\n              \"volumeMounts\": [\n                {\n                  \"name\": \"azure\",\n                  \"mountPath\": \"/data\"\n                }\n              ]\n            }\n          ],\n          \"volumes\": [\n            {\n              \"name\": \"azure\",\n              \"persistentVolumeClaim\": {\n                \"claimName\": \"syansb21-vision-fileshare\"\n              }\n            }\n          ],\n          \"automountServiceAccountToken\": false,\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n}"
-						}
-					},
-					{
-						"name": "Gen Kubectl Rest API payload",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "Gen Kubectl Spec",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "KubeCmdToSend",
+							"variableName": "KubeTaskJob",
 							"value": {
-								"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl apply -f aoi-cv-task.json', '\",',\n'\"context\" : \"', variables('KubeCmdSpecInBase64Encoded'), '\"',\n'}'\n)",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "Gen SpecZipBase64Encoding Func",
-						"type": "AzureFunctionActivity",
-						"dependsOn": [
-							{
-								"activity": "Gen Kubectl Rest API payload",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"functionName": "base64EncodedZipContent",
-							"method": "POST",
-							"headers": {
-								"Content-Type": "application/json"
-							},
-							"body": {
-								"value": "@variables('KubeCmdSpec')",
-								"type": "Expression"
-							}
-						},
-						"linkedServiceName": {
-							"referenceName": "GenBase64Encoding",
-							"type": "LinkedServiceReference"
-						}
-					},
-					{
-						"name": "Set SpecZipBase64Encoded",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "Gen SpecZipBase64Encoding Func",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "KubeCmdSpecInBase64Encoded",
-							"value": {
-								"value": "@activity('Gen SpecZipBase64Encoding Func').output.Response",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "Invoke Workload in AKS",
-						"type": "WebActivity",
-						"dependsOn": [
-							{
-								"activity": "Set SpecZipBase64Encoded",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "7.00:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"url": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourceGroups/syansb21-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb21-aks2/runCommand?api-version=2022-02-01",
-							"connectVia": {
-								"referenceName": "AutoResolveIntegrationRuntime",
-								"type": "IntegrationRuntimeReference"
-							},
-							"method": "POST",
-							"headers": {},
-							"body": {
-								"value": "@variables('KubeCmdToSend')",
-								"type": "Expression"
-							},
-							"authentication": {
-								"type": "MSI",
-								"resource": "https://management.core.windows.net"
-							}
-						}
-					},
-					{
-						"name": "Until1",
-						"type": "Until",
-						"dependsOn": [
-							{
-								"activity": "Set KubeJobStatusCheckCmd",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"expression": {
-								"value": "@contains(variables('KubeJobStatusCheckResult'),'No resources found')",
-								"type": "Expression"
-							},
-							"activities": [
-								{
-									"name": "Check Job Status",
-									"type": "WebActivity",
-									"dependsOn": [
-										{
-											"activity": "Wait",
-											"dependencyConditions": [
-												"Succeeded"
-											]
-										}
-									],
-									"policy": {
-										"timeout": "7.00:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"url": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourceGroups/syansb21-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb21-aks2/runCommand?api-version=2022-02-01",
-										"connectVia": {
-											"referenceName": "AutoResolveIntegrationRuntime",
-											"type": "IntegrationRuntimeReference"
-										},
-										"method": "POST",
-										"headers": {},
-										"body": {
-											"value": "@variables('KubeJobStatusCheckCmdToSend')",
-											"type": "Expression"
-										},
-										"authentication": {
-											"type": "MSI",
-											"resource": "https://management.core.windows.net"
-										}
-									}
-								},
-								{
-									"name": "Set JobStatus",
-									"type": "SetVariable",
-									"dependsOn": [
-										{
-											"activity": "Check Job Status",
-											"dependencyConditions": [
-												"Succeeded"
-											]
-										}
-									],
-									"userProperties": [],
-									"typeProperties": {
-										"variableName": "KubeJobStatusCheckResult",
-										"value": {
-											"value": "@activity('Check Job Status').output['properties']['logs']\n\n",
-											"type": "Expression"
-										}
-									}
-								},
-								{
-									"name": "Wait",
-									"type": "Wait",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"waitTimeInSeconds": 15
-									}
-								}
-							],
-							"timeout": "3.00:00:00"
-						}
-					},
-					{
-						"name": "Set KubeJobStatusCheckCmd",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "Invoke Workload in AKS",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "KubeJobStatusCheckCmdToSend",
-							"value": {
-								"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl -n vision get jobs --selector run_id=', pipeline().RunId ,' \"',\n'}'\n)",
+								"value": "@concat('{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"aoi-cv-task\",\n      \"namespace\": \"vision\",\n      \"labels\": {\n        \"run_id\": \"',pipeline().RunId, '\",\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 5,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"aoi-cv-task-xyz\",\n              \"image\": \"', activity('Read Spec Document').output['runStatus'].output.sink.value[0]['algImageName'] ,'\",\n              \"env\": [\n                {\n                  \"name\": \"APP_INPUT_DIR\",\n                  \"value\": \"', activity('Read Spec Document').output['runStatus'].output.sink.value[0]['mountedDirectory'] , '/',pipeline().parameters.Prefix,'/' , activity('Read Spec Document').output['runStatus'].output.sink.value[0]['submissionDirectory'],'\"\n                },\n                {\n                  \"name\": \"APP_OUTPUT_DIR\",\n                  \"value\": \"', activity('Read Spec Document').output['runStatus'].output.sink.value[0]['mountedDirectory'] , '/',pipeline().parameters.Prefix,'/' , activity('Read Spec Document').output['runStatus'].output.sink.value[0]['resultsDirectory'],'\"\n                },\n                {\n                  \"name\": \"APP_CONFIG_DIR\",\n                  \"value\": \"', activity('Read Spec Document').output['runStatus'].output.sink.value[0]['mountedDirectory'] , '/',pipeline().parameters.Prefix,'/' , activity('Read Spec Document').output['runStatus'].output.sink.value[0]['contextFileName'],'\"\n                }\n              ],\n              \"volumeMounts\": [\n                {\n                  \"name\": \"azure\",\n                  \"mountPath\": \"', activity('Read Spec Document').output['runStatus'].output.sink.value[0]['mountedDirectory'], '\"\n                }\n              ]\n            }\n          ],\n          \"volumes\": [\n            {\n              \"name\": \"azure\",\n              \"persistentVolumeClaim\": {\n                \"claimName\": \"', pipeline().parameters.PersistentVolumeClaim, '\"\n              }\n            }\n          ],\n          \"automountServiceAccountToken\": false,\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n}')",
 								"type": "Expression"
 							}
 						}
@@ -1710,38 +1653,38 @@
 				},
 				"parameters": {
 					"Prefix": {
-						"type": "string"
+						"type": "string",
+						"defaultValue": "testme"
 					},
 					"BatchName": {
-						"type": "string"
+						"type": "string",
+						"defaultValue": "mybatch"
 					},
 					"JobName": {
-						"type": "string"
+						"type": "string",
+						"defaultValue": "youjob"
 					},
 					"BatchLocation": {
-						"type": "string"
+						"type": "string",
+						"defaultValue": "eastus"
 					},
 					"StorageAccountName": {
-						"type": "string"
+						"type": "string",
+						"defaultValue": "rawdatadppktx"
+					},
+					"PersistentVolumeClaim": {
+						"type": "string",
+						"defaultValue": "syansb21-vision-fileshare"
 					}
 				},
 				"variables": {
-					"KubeCmdSpec": {
-						"type": "String"
-					},
-					"KubeCmdToSend": {
+					"KubeTaskJob": {
 						"type": "String"
 					},
 					"KubeCmdSpecInBase64Encoded": {
 						"type": "String"
 					},
-					"KubeJobStatusCheckCmdToSend": {
-						"type": "String"
-					},
 					"KubeJobStatusCheckResult": {
-						"type": "String"
-					},
-					"KubeCmdSpecTemplate": {
 						"type": "String"
 					}
 				},
@@ -1755,8 +1698,8 @@
 				"[concat(variables('workspaceId'), '/datasets/gls')]",
 				"[concat(variables('workspaceId'), '/datasets/gld')]",
 				"[concat(variables('workspaceId'), '/dataflows/ReadSpecDocumentFlow')]",
-				"[concat(variables('workspaceId'), '/linkedServices/GenBase64Encoding')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
+				"[concat(variables('workspaceId'), '/linkedServices/GenBase64Encoding')]"
 			]
 		},
 		{
@@ -1766,51 +1709,11 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Gen Kubectl Spec",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "Set KubeCmdSpec template",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "KubeCmdSpec",
-							"value": {
-								"value": "@replace(variables('KubeCmdSpecTemplate'), '__run_id__', pipeline().RunId)",
-								"type": "Expression"
-							}
-						}
-					},
-					{
-						"name": "Gen Kubectl Rest API payload",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "Set SpecZipBase64Encoded",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "KubeCmdToSend",
-							"value": {
-								"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl apply -f aoi-cv-task.json', '\",',\n'\"context\" : \"', variables('KubeCmdSpecInBase64Encoded'), '\"',\n'}'\n)",
-								"type": "Expression"
-							}
-						}
-					},
-					{
 						"name": "Gen SpecZipBase64Encoding Func",
 						"type": "AzureFunctionActivity",
 						"dependsOn": [
 							{
-								"activity": "Gen Kubectl Spec",
+								"activity": "Gen Kubectl Task Cmd",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -1831,7 +1734,7 @@
 								"Content-Type": "application/json"
 							},
 							"body": {
-								"value": "@variables('KubeCmdSpec')",
+								"value": "@json(variables('KubeTaskJob'))",
 								"type": "Expression"
 							}
 						},
@@ -1865,7 +1768,7 @@
 						"type": "WebActivity",
 						"dependsOn": [
 							{
-								"activity": "Gen Kubectl Rest API payload",
+								"activity": "Set SpecZipBase64Encoded",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -1888,7 +1791,7 @@
 							"method": "POST",
 							"headers": {},
 							"body": {
-								"value": "@variables('KubeCmdToSend')",
+								"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl apply -f aoi-cv-task.json', '\",',\n'\"context\" : \"', variables('KubeCmdSpecInBase64Encoded'), '\"',\n'}'\n)",
 								"type": "Expression"
 							},
 							"authentication": {
@@ -1902,7 +1805,7 @@
 						"type": "Until",
 						"dependsOn": [
 							{
-								"activity": "Set KubeJobStatusCheckCmd",
+								"activity": "Invoke Workload in AKS",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -1943,7 +1846,7 @@
 										"method": "POST",
 										"headers": {},
 										"body": {
-											"value": "@variables('KubeJobStatusCheckCmdToSend')",
+											"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl -n vision get jobs --selector run_id=', pipeline().RunId ,' \"',\n'}'\n)",
 											"type": "Expression"
 										},
 										"authentication": {
@@ -1986,11 +1889,51 @@
 						}
 					},
 					{
-						"name": "Set KubeJobStatusCheckCmd",
+						"name": "Read Spec Document",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "1.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "ReadSpecDocumentFlow",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source": {
+										"filename": "custom_vision_object_detection.json",
+										"folderpath": "config",
+										"containername": {
+											"value": "@pipeline().parameters.Prefix",
+											"type": "Expression"
+										}
+									},
+									"sink": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "None",
+							"cacheSinks": {
+								"firstRowOnly": true
+							}
+						}
+					},
+					{
+						"name": "Gen Kubectl Task Cmd",
 						"type": "SetVariable",
 						"dependsOn": [
 							{
-								"activity": "Invoke Workload in AKS",
+								"activity": "Read Spec Document",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -1998,21 +1941,11 @@
 						],
 						"userProperties": [],
 						"typeProperties": {
-							"variableName": "KubeJobStatusCheckCmdToSend",
+							"variableName": "KubeTaskJob",
 							"value": {
-								"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl -n vision get jobs --selector run_id=', pipeline().RunId ,' \"',\n'}'\n)",
+								"value": "@concat('{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"aoi-cv-task\",\n      \"namespace\": \"vision\",\n      \"labels\": {\n        \"run_id\": \"',pipeline().RunId, '\",\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 5,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"aoi-cv-task-xyz\",\n              \"image\": \"', activity('Read Spec Document').output['runStatus'].output.sink.value[0]['algImageName'] ,'\",\n              \"env\": [\n                {\n                  \"name\": \"APP_INPUT_DIR\",\n                  \"value\": \"', activity('Read Spec Document').output['runStatus'].output.sink.value[0]['mountedDirectory'] , '/',pipeline().parameters.Prefix,'/' , activity('Read Spec Document').output['runStatus'].output.sink.value[0]['submissionDirectory'],'\"\n                },\n                {\n                  \"name\": \"APP_OUTPUT_DIR\",\n                  \"value\": \"', activity('Read Spec Document').output['runStatus'].output.sink.value[0]['mountedDirectory'] , '/',pipeline().parameters.Prefix,'/' , activity('Read Spec Document').output['runStatus'].output.sink.value[0]['resultsDirectory'],'\"\n                },\n                {\n                  \"name\": \"APP_CONFIG_DIR\",\n                  \"value\": \"', activity('Read Spec Document').output['runStatus'].output.sink.value[0]['mountedDirectory'] , '/',pipeline().parameters.Prefix,'/' , activity('Read Spec Document').output['runStatus'].output.sink.value[0]['contextFileName'],'\"\n                }\n              ],\n              \"volumeMounts\": [\n                {\n                  \"name\": \"azure\",\n                  \"mountPath\": \"', activity('Read Spec Document').output['runStatus'].output.sink.value[0]['mountedDirectory'], '\"\n                }\n              ]\n            }\n          ],\n          \"volumes\": [\n            {\n              \"name\": \"azure\",\n              \"persistentVolumeClaim\": {\n                \"claimName\": \"', pipeline().parameters.PersistentVolumeClaim, '\"\n              }\n            }\n          ],\n          \"automountServiceAccountToken\": false,\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n}')",
 								"type": "Expression"
 							}
-						}
-					},
-					{
-						"name": "Set KubeCmdSpec template",
-						"type": "SetVariable",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "KubeCmdSpecTemplate",
-							"value": "{\n    \"apiVersion\": \"batch/v1\",\n    \"kind\": \"Job\",\n    \"metadata\": {\n      \"name\": \"aoi-cv-task\",\n      \"namespace\": \"vision\",\n      \"labels\": {\n        \"run_id\": \"__run_id__\"\n      }\n    },\n    \"spec\": {\n      \"ttlSecondsAfterFinished\": 10,\n      \"template\": {\n        \"spec\": {\n          \"containers\": [\n            {\n              \"name\": \"aoi-cv-task-xyz\",\n              \"image\": \"ghcr.io/azure/azure-orbital-analytics-samples/custom_vision_offline:latest\",\n              \"env\": [\n                {\n                  \"name\": \"APP_INPUT_DIR\",\n                  \"value\": \"/data/testme/in\"\n                },\n                {\n                  \"name\": \"APP_OUTPUT_DIR\",\n                  \"value\": \"/data/testme/out\"\n                },\n                {\n                  \"name\": \"APP_CONFIG_DIR\",\n                  \"value\": \"/data/testme/config.json\"\n                }\n              ],\n              \"volumeMounts\": [\n                {\n                  \"name\": \"azure\",\n                  \"mountPath\": \"/data\"\n                }\n              ]\n            }\n          ],\n          \"volumes\": [\n            {\n              \"name\": \"azure\",\n              \"persistentVolumeClaim\": {\n                \"claimName\": \"syansb21-vision-fileshare\"\n              }\n            }\n          ],\n          \"automountServiceAccountToken\": false,\n          \"restartPolicy\": \"Never\"\n        }\n      }\n    }\n}"
 						}
 					}
 				],
@@ -2020,13 +1953,17 @@
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
 				},
+				"parameters": {
+					"Prefix": {
+						"type": "string",
+						"defaultValue": "testme"
+					},
+					"PersistentVolumeClaim": {
+						"type": "string",
+						"defaultValue": "syansb21-vision-fileshare"
+					}
+				},
 				"variables": {
-					"KubeCmdSpec": {
-						"type": "String"
-					},
-					"KubeCmdToSend": {
-						"type": "String"
-					},
 					"KubeCmdSpecInBase64Encoded": {
 						"type": "String"
 					},
@@ -2036,7 +1973,7 @@
 					"KubeJobStatusCheckResult": {
 						"type": "String"
 					},
-					"KubeCmdSpecTemplate": {
+					"KubeTaskJob": {
 						"type": "String"
 					}
 				},
@@ -2044,7 +1981,8 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/linkedServices/GenBase64Encoding')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
+				"[concat(variables('workspaceId'), '/dataflows/ReadSpecDocumentFlow')]"
 			]
 		},
 		{
