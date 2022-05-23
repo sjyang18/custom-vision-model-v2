@@ -544,7 +544,7 @@
 					},
 					"method": "POST",
 					"body": {
-						"value": "@variables('KubeCmdToSend')",
+						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl apply -f aoi-cv-task.json', '\",',\n'\"context\" : \"', variables('KubeCmdSpecInBase64Encoded'), '\"',\n'}'\n)",
 						"type": "Expression"
 					},
 					"authentication": {
@@ -558,7 +558,7 @@
 				"type": "Until",
 				"dependsOn": [
 					{
-						"activity": "Set KubeJobStatusCheckCmd",
+						"activity": "Invoke Workload in AKS",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -598,7 +598,7 @@
 								},
 								"method": "POST",
 								"body": {
-									"value": "@variables('KubeJobStatusCheckCmdToSend')",
+									"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl -n vision get jobs --selector run_id=', pipeline().RunId ,' \"',\n'}'\n)",
 									"type": "Expression"
 								},
 								"authentication": {
@@ -639,50 +639,32 @@
 					],
 					"timeout": "3.00:00:00"
 				}
-			},
-			{
-				"name": "Set KubeJobStatusCheckCmd",
-				"type": "SetVariable",
-				"dependsOn": [
-					{
-						"activity": "Invoke Workload in AKS",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "KubeJobStatusCheckCmdToSend",
-					"value": {
-						"value": "@concat(\n'{',\n'\"command\" : \"', 'kubectl -n vision get jobs --selector run_id=', pipeline().RunId ,' \"',\n'}'\n)",
-						"type": "Expression"
-					}
-				}
 			}
 		],
 		"parameters": {
 			"Prefix": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "testme"
 			},
 			"BatchName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "mybatch"
 			},
 			"JobName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "youjob"
 			},
 			"BatchLocation": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "eastus"
 			},
 			"StorageAccountName": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "rawdatadppktx"
 			}
 		},
 		"variables": {
 			"KubeCmdSpec": {
-				"type": "String"
-			},
-			"KubeCmdToSend": {
 				"type": "String"
 			},
 			"KubeCmdSpecInBase64Encoded": {
