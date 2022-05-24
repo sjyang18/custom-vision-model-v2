@@ -2056,6 +2056,10 @@
 								"StorageAccountName": {
 									"value": "@pipeline().parameters.StorageAccountName",
 									"type": "Expression"
+								},
+								"PersistentVolumeClaim": {
+									"value": "@pipeline().parameters.PersistentVolumeClaim",
+									"type": "Expression"
 								}
 							}
 						}
@@ -2089,6 +2093,10 @@
 					"BatchLocation": {
 						"type": "string",
 						"defaultValue": "eastus"
+					},
+					"PersistentVolumeClaim": {
+						"type": "string",
+						"defaultValue": "syansb21-vision-fileshare"
 					}
 				},
 				"variables": {
