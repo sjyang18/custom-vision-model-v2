@@ -11,7 +11,7 @@
 					"referenceName": "AOI Pipeline Key Vault",
 					"type": "LinkedServiceReference"
 				},
-				"secretName": "GenBase64EcondingKey"
+				"secretName": "GenBase64EncondingFunctionKey"
 			},
 			"authentication": "Anonymous"
 		}
