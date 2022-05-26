@@ -43,13 +43,13 @@
 			"type": "string",
 			"defaultValue": "https://syansb21-pipeline-kv.vault.azure.net/"
 		},
-		"GenBase64Encoding_properties_typeProperties_functionAppUrl": {
-			"type": "string",
-			"defaultValue": "https://syansb21-orc-fapp.azurewebsites.net"
-		},
 		"syansb21-pipeline-syn-ws-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://synhnslofkzx.dfs.core.windows.net/"
+		},
+		"GenBase64Encoding_properties_typeProperties_functionAppUrl": {
+			"type": "string",
+			"defaultValue": "https://syansb21-orc-fapp.azurewebsites.net"
 		}
 	},
 	"variables": {
@@ -2447,30 +2447,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/GenBase64Encoding')]",
-			"type": "Microsoft.Synapse/workspaces/linkedServices",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": [],
-				"type": "AzureFunction",
-				"typeProperties": {
-					"functionAppUrl": "[parameters('GenBase64Encoding_properties_typeProperties_functionAppUrl')]",
-					"functionKey": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "AOI Pipeline Key Vault",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": "GenBase64EcondingKey"
-					},
-					"authentication": "Anonymous"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/AOI Pipeline Key Vault')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/syansb21-pipeline-syn-ws-WorkspaceDefaultSqlServer')]",
 			"type": "Microsoft.Synapse/workspaces/linkedServices",
 			"apiVersion": "2019-06-01-preview",
@@ -2803,6 +2779,30 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/pipelines/Custom Vision Model Transforms v2')]",
 				"[concat(variables('workspaceId'), '/pipelines/Custom Vision Object Detection v2_aks')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/GenBase64Encoding')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureFunction",
+				"typeProperties": {
+					"functionAppUrl": "[parameters('GenBase64Encoding_properties_typeProperties_functionAppUrl')]",
+					"functionKey": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AOI Pipeline Key Vault",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "GenBase64EncondingFunctionKey"
+					},
+					"authentication": "Anonymous"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/AOI Pipeline Key Vault')]"
 			]
 		}
 	]
