@@ -1,5 +1,5 @@
 {
-	"name": "E2E Custom Vision Model Flow",
+	"name": "E2E Custom Vision Model Flow_aks",
 	"properties": {
 		"activities": [
 			{
@@ -89,17 +89,9 @@
 				"type": "string",
 				"defaultValue": "-117.063550 32.749467 -116.999386 32.812946"
 			},
-			"BatchAccountName": {
+			"PersistentVolumeClaim": {
 				"type": "string",
-				"defaultValue": "syansb21orcbatchact"
-			},
-			"BatchJobName": {
-				"type": "string",
-				"defaultValue": "xyz"
-			},
-			"BatchLocation": {
-				"type": "string",
-				"defaultValue": "eastus"
+				"defaultValue": "syansb21-vision-fileshare"
 			}
 		},
 		"variables": {
