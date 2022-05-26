@@ -609,18 +609,6 @@
 				"type": "string",
 				"defaultValue": "testme"
 			},
-			"BatchName": {
-				"type": "string",
-				"defaultValue": "mybatch"
-			},
-			"JobName": {
-				"type": "string",
-				"defaultValue": "youjob"
-			},
-			"BatchLocation": {
-				"type": "string",
-				"defaultValue": "eastus"
-			},
 			"StorageAccountName": {
 				"type": "string",
 				"defaultValue": "rawdatadppktx"
