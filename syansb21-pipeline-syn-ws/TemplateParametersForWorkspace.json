@@ -33,7 +33,7 @@
 			"value": "https://syansb21-pipeline-kv.vault.azure.net/"
 		},
 		"GenBase64Encoding_properties_typeProperties_functionAppUrl": {
-			"value": "https://syansb21func.azurewebsites.net"
+			"value": "https://syansb21-orc-fapp.azurewebsites.net"
 		},
 		"syansb21-pipeline-syn-ws-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"value": "https://synhnslofkzx.dfs.core.windows.net/"

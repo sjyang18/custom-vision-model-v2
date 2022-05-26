@@ -45,7 +45,7 @@
 		},
 		"GenBase64Encoding_properties_typeProperties_functionAppUrl": {
 			"type": "string",
-			"defaultValue": "https://syansb21func.azurewebsites.net"
+			"defaultValue": "https://syansb21-orc-fapp.azurewebsites.net"
 		},
 		"syansb21-pipeline-syn-ws-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"type": "string",
@@ -2032,36 +2032,11 @@
 						"userProperties": [],
 						"typeProperties": {
 							"pipeline": {
-								"referenceName": "Custom Vision Object Detection v2_aks",
+								"referenceName": "Custom Vision Object Detection v2",
 								"type": "PipelineReference"
 							},
 							"waitOnCompletion": true,
-							"parameters": {
-								"Prefix": {
-									"value": "@pipeline().parameters.Prefix",
-									"type": "Expression"
-								},
-								"BatchName": {
-									"value": "@pipeline().parameters.BatchAccountName",
-									"type": "Expression"
-								},
-								"JobName": {
-									"value": "@pipeline().parameters.BatchJobName",
-									"type": "Expression"
-								},
-								"BatchLocation": {
-									"value": "@pipeline().parameters.BatchLocation",
-									"type": "Expression"
-								},
-								"StorageAccountName": {
-									"value": "@pipeline().parameters.StorageAccountName",
-									"type": "Expression"
-								},
-								"PersistentVolumeClaim": {
-									"value": "@pipeline().parameters.PersistentVolumeClaim",
-									"type": "Expression"
-								}
-							}
+							"parameters": {}
 						}
 					}
 				],
@@ -2093,10 +2068,6 @@
 					"BatchLocation": {
 						"type": "string",
 						"defaultValue": "eastus"
-					},
-					"PersistentVolumeClaim": {
-						"type": "string",
-						"defaultValue": "syansb21-vision-fileshare"
 					}
 				},
 				"variables": {
@@ -2109,7 +2080,7 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/pipelines/Custom Vision Model Transforms v2')]",
-				"[concat(variables('workspaceId'), '/pipelines/Custom Vision Object Detection v2_aks')]"
+				"[concat(variables('workspaceId'), '/pipelines/Custom Vision Object Detection v2')]"
 			]
 		},
 		{
@@ -2730,6 +2701,109 @@
 			},
 			"dependsOn": [],
 			"location": "eastus"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/E2E Custom Vision Model Flow_aks')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Transforms",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Custom Vision Model Transforms v2",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Prefix": {
+									"value": "@pipeline().parameters.Prefix",
+									"type": "Expression"
+								},
+								"StorageAccountName": {
+									"value": "@pipeline().parameters.StorageAccountName",
+									"type": "Expression"
+								},
+								"AOI": {
+									"value": "@pipeline().parameters.AOI",
+									"type": "Expression"
+								}
+							}
+						}
+					},
+					{
+						"name": "Custom Vision Object Detection",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Transforms",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "Custom Vision Object Detection v2_aks",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {
+								"Prefix": {
+									"value": "@pipeline().parameters.Prefix",
+									"type": "Expression"
+								},
+								"StorageAccountName": {
+									"value": "@pipeline().parameters.StorageAccountName",
+									"type": "Expression"
+								},
+								"PersistentVolumeClaim": {
+									"value": "@pipeline().parameters.PersistentVolumeClaim",
+									"type": "Expression"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"Prefix": {
+						"type": "string",
+						"defaultValue": "testme"
+					},
+					"StorageAccountName": {
+						"type": "string",
+						"defaultValue": "rawdatadppktx"
+					},
+					"AOI": {
+						"type": "string",
+						"defaultValue": "-117.063550 32.749467 -116.999386 32.812946"
+					},
+					"PersistentVolumeClaim": {
+						"type": "string",
+						"defaultValue": "syansb21-vision-fileshare"
+					}
+				},
+				"variables": {
+					"Storage_Account_Conn_String": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-03-06T05:42:39Z"
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/Custom Vision Model Transforms v2')]",
+				"[concat(variables('workspaceId'), '/pipelines/Custom Vision Object Detection v2_aks')]"
+			]
 		}
 	]
 }
