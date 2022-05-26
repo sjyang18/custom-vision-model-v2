@@ -43,36 +43,10 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "Custom Vision Object Detection v2_aks",
+						"referenceName": "Custom Vision Object Detection v2",
 						"type": "PipelineReference"
 					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"Prefix": {
-							"value": "@pipeline().parameters.Prefix",
-							"type": "Expression"
-						},
-						"BatchName": {
-							"value": "@pipeline().parameters.BatchAccountName",
-							"type": "Expression"
-						},
-						"JobName": {
-							"value": "@pipeline().parameters.BatchJobName",
-							"type": "Expression"
-						},
-						"BatchLocation": {
-							"value": "@pipeline().parameters.BatchLocation",
-							"type": "Expression"
-						},
-						"StorageAccountName": {
-							"value": "@pipeline().parameters.StorageAccountName",
-							"type": "Expression"
-						},
-						"PersistentVolumeClaim": {
-							"value": "@pipeline().parameters.PersistentVolumeClaim",
-							"type": "Expression"
-						}
-					}
+					"waitOnCompletion": true
 				}
 			}
 		],
