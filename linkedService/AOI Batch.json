@@ -4,9 +4,9 @@
         "annotations": [],
         "type": "AzureBatch",
         "typeProperties": {
-            "batchUri": "https://syansb09orcbatchact.eastus.batch.azure.com",
+            "batchUri": "https://__batch_account__.__location__.batch.azure.com",
             "poolName": "data-cpu-pool",
-            "accountName": "syansb09orcbatchact",
+            "accountName": "__batch_account__",
             "linkedServiceName": {
                 "referenceName": "AOI Batch Storage",
                 "type": "LinkedServiceReference"
