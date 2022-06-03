@@ -1,6 +1,6 @@
 {
-    "name": "pool2sips6",
-    "location": "eastus",
+    "name": "pooltlrgcs",
+    "location": "__location__",
     "properties": {
         "autoPause": {
             "enabled": true,
