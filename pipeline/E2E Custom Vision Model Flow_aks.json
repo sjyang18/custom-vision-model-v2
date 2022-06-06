@@ -75,7 +75,7 @@
 			},
 			"AOI": {
 				"type": "string",
-				"defaultValue": "-117.063550, 32.749467, -116.999386, 32.812946"
+				"defaultValue": "-117.063550 32.749467 -116.999386 32.812946"
 			},
 			"PersistentVolumeClaim": {
 				"type": "string",
