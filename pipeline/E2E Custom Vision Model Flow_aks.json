@@ -30,7 +30,7 @@
                 }
             },
             {
-                "name": "Custom Vision Object Detection",
+                "name": "Custom Vision Object Detection with AKS",
                 "type": "ExecutePipeline",
                 "dependsOn": [
                     {
@@ -50,18 +50,6 @@
                     "parameters": {
                         "Prefix": {
                             "value": "@pipeline().parameters.Prefix",
-                            "type": "Expression"
-                        },
-                        "BatchName": {
-                            "value": "@pipeline().parameters.BatchAccountName",
-                            "type": "Expression"
-                        },
-                        "JobName": {
-                            "value": "@pipeline().parameters.BatchJobName",
-                            "type": "Expression"
-                        },
-                        "BatchLocation": {
-                            "value": "@pipeline().parameters.BatchLocation",
                             "type": "Expression"
                         },
                         "StorageAccountName": {
@@ -91,7 +79,7 @@
             },
             "PersistentVolumeClaim": {
                 "type": "string",
-                "defaultValue": "syansb23-vision-fileshare"
+                "defaultValue": "syansb33-vision-fileshare"
             }
         },
         "variables": {
