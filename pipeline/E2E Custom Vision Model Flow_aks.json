@@ -52,18 +52,6 @@
                             "value": "@pipeline().parameters.Prefix",
                             "type": "Expression"
                         },
-                        "BatchName": {
-                            "value": "@pipeline().parameters.BatchAccountName",
-                            "type": "Expression"
-                        },
-                        "JobName": {
-                            "value": "@pipeline().parameters.BatchJobName",
-                            "type": "Expression"
-                        },
-                        "BatchLocation": {
-                            "value": "@pipeline().parameters.BatchLocation",
-                            "type": "Expression"
-                        },
                         "StorageAccountName": {
                             "value": "@pipeline().parameters.StorageAccountName",
                             "type": "Expression"
@@ -91,7 +79,7 @@
             },
             "PersistentVolumeClaim": {
                 "type": "string",
-                "defaultValue": "syansb26-vision-fileshare"
+                "defaultValue": "syansb31-vision-fileshare"
             }
         },
         "variables": {

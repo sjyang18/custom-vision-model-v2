@@ -19,14 +19,14 @@
                         "referenceName": "Transforms",
                         "type": "SparkJobDefinitionReference"
                     },
-                    "file": "abfss://spark-jobs@synhns5trgtn.dfs.core.windows.net/customvision_transform/src/main.py",
+                    "file": "abfss://spark-jobs@synhnsqugfrp.dfs.core.windows.net/customvision_transform/src/main.py",
                     "args": [
                         "--storage_account_name",
                         "@pipeline().parameters.StorageAccountName",
                         "--storage_container",
                         "@pipeline().parameters.Prefix",
                         "--key_vault_name",
-                        "syansb26-pipeline-kv",
+                        "syansb31-pipeline-kv",
                         "--storage_account_key_secret_name",
                         "GeospatialStorageAccountKey",
                         "--linked_service_name",
@@ -38,7 +38,7 @@
 						"@split(pipeline().parameters.AOI, ' ')[3]"
                     ],
                     "targetBigDataPool": {
-                        "referenceName": "pool5trgtn",
+                        "referenceName": "poolqugfrp",
                         "type": "BigDataPoolReference"
                     },
                     "executorSize": "Medium",

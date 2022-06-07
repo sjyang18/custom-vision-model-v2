@@ -4,7 +4,7 @@
         "annotations": [],
         "type": "AzureFunction",
         "typeProperties": {
-            "functionAppUrl": "https://syansb26-orc-fapp.azurewebsites.net",
+            "functionAppUrl": "https://syansb31-orc-fapp.azurewebsites.net",
             "functionKey": {
                 "type": "AzureKeyVaultSecret",
                 "store": {
