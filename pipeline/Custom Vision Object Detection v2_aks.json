@@ -32,7 +32,7 @@
                         "referenceName": "Pool Geolocation",
                         "type": "SparkJobDefinitionReference"
                     },
-                    "file": "abfss://spark-jobs@synhnsafun3p.dfs.core.windows.net/pool_geolocation/src/main.py",
+                    "file": "abfss://spark-jobs@synhnsxvm2xh.dfs.core.windows.net/pool_geolocation/src/main.py",
                     "args": [
                         "--storage_account_name",
                         "@pipeline().parameters.StorageAccountName",
@@ -41,14 +41,14 @@
                         "--src_folder_name",
                         "detections",
                         "--key_vault_name",
-                        "syansb33-pipeline-kv",
+                        "syansb35-pipeline-kv",
                         "--storage_account_key_secret_name",
                         "GeospatialStorageAccountKey",
                         "--linked_service_name",
                         "AOI Pipeline Key Vault"
                     ],
                     "targetBigDataPool": {
-                        "referenceName": "poolafun3p",
+                        "referenceName": "poolxvm2xh",
                         "type": "BigDataPoolReference"
                     },
                     "executorSize": "Medium",
@@ -84,7 +84,7 @@
                         "referenceName": "Copy noop",
                         "type": "SparkJobDefinitionReference"
                     },
-                    "file": "abfss://spark-jobs@synhnsafun3p.dfs.core.windows.net/copy_noop/src/main.py",
+                    "file": "abfss://spark-jobs@synhnsxvm2xh.dfs.core.windows.net/copy_noop/src/main.py",
                     "args": [
                         "--storage_account_name",
                         "@pipeline().parameters.StorageAccountName",
@@ -93,7 +93,7 @@
                         "--src_folder",
                         "tiles",
                         "--key_vault_name",
-                        "syansb33-pipeline-kv",
+                        "syansb35-pipeline-kv",
                         "--storage_account_key_secret_name",
                         "GeospatialStorageAccountKey",
                         "--linked_service_name",
@@ -110,7 +110,7 @@
                         "@concat(pipeline().parameters.Prefix,'/', activity('Read Spec Document').output['runStatus'].output.sink.value[0]['logsDirectory'])"
                     ],
                     "targetBigDataPool": {
-                        "referenceName": "poolafun3p",
+                        "referenceName": "poolxvm2xh",
                         "type": "BigDataPoolReference"
                     },
                     "executorSize": "Medium",
@@ -146,7 +146,7 @@
                         "referenceName": "Copy noop",
                         "type": "SparkJobDefinitionReference"
                     },
-                    "file": "abfss://spark-jobs@synhnsafun3p.dfs.core.windows.net/copy_noop/src/main.py",
+                    "file": "abfss://spark-jobs@synhnsxvm2xh.dfs.core.windows.net/copy_noop/src/main.py",
                     "args": [
                         "--storage_account_name",
                         "@pipeline().parameters.StorageAccountName",
@@ -155,7 +155,7 @@
                         "--src_folder",
                         "@concat('config/', activity('Read Spec Document').output['runStatus'].output.sink.value[0]['contextFileName'])",
                         "--key_vault_name",
-                        "syansb33-pipeline-kv",
+                        "syansb35-pipeline-kv",
                         "--storage_account_key_secret_name",
                         "GeospatialStorageAccountKey",
                         "--linked_service_name",
@@ -166,7 +166,7 @@
                         "@concat(pipeline().parameters.Prefix, '/', activity('Read Spec Document').output['runStatus'].output.sink.value[0]['contextFileName'])"
                     ],
                     "targetBigDataPool": {
-                        "referenceName": "poolafun3p",
+                        "referenceName": "poolxvm2xh",
                         "type": "BigDataPoolReference"
                     },
                     "executorSize": "Medium",
@@ -367,7 +367,7 @@
                         "referenceName": "Copy noop",
                         "type": "SparkJobDefinitionReference"
                     },
-                    "file": "abfss://spark-jobs@synhnsafun3p.dfs.core.windows.net/copy_noop/src/main.py",
+                    "file": "abfss://spark-jobs@synhnsxvm2xh.dfs.core.windows.net/copy_noop/src/main.py",
                     "args": [
                         "--storage_account_name",
                         "@pipeline().parameters.StorageAccountName",
@@ -376,7 +376,7 @@
                         "--src_folder",
                         "convert/output.png.aux.xml",
                         "--key_vault_name",
-                        "syansb33-pipeline-kv",
+                        "syansb35-pipeline-kv",
                         "--storage_account_key_secret_name",
                         "GeospatialStorageAccountKey",
                         "--linked_service_name",
@@ -387,7 +387,7 @@
                         "@concat(pipeline().parameters.Prefix, '/', activity('Read Spec Document').output['runStatus'].output.sink.value[0]['submissionDirectory'], '/output.png.aux.xml')"
                     ],
                     "targetBigDataPool": {
-                        "referenceName": "poolafun3p",
+                        "referenceName": "poolxvm2xh",
                         "type": "BigDataPoolReference"
                     },
                     "executorSize": "Medium",
@@ -500,7 +500,7 @@
                 },
                 "userProperties": [],
                 "typeProperties": {
-                    "url": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourcegroups/syansb33-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb33orcaks/runCommand?api-version=2022-02-01",
+                    "url": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourcegroups/syansb35-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb35orcaks/runCommand?api-version=2022-02-01",
                     "connectVia": {
                         "referenceName": "AutoResolveIntegrationRuntime",
                         "type": "IntegrationRuntimeReference"
@@ -554,7 +554,7 @@
                             },
                             "userProperties": [],
                             "typeProperties": {
-                                "url": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourcegroups/syansb33-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb33orcaks/runCommand?api-version=2022-02-01",
+                                "url": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourcegroups/syansb35-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb35orcaks/runCommand?api-version=2022-02-01",
                                 "connectVia": {
                                     "referenceName": "AutoResolveIntegrationRuntime",
                                     "type": "IntegrationRuntimeReference"
@@ -615,7 +615,7 @@
             },
             "PersistentVolumeClaim": {
                 "type": "string",
-                "defaultValue": "syansb33-vision-fileshare"
+                "defaultValue": "syansb35-vision-fileshare"
             }
         },
         "variables": {

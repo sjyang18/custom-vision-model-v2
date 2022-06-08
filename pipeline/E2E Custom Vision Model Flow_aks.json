@@ -79,7 +79,7 @@
             },
             "PersistentVolumeClaim": {
                 "type": "string",
-                "defaultValue": "syansb33-vision-fileshare"
+                "defaultValue": "syansb35-vision-fileshare"
             }
         },
         "variables": {
