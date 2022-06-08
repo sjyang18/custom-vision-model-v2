@@ -1591,7 +1591,8 @@
 						"defaultValue": "rawdata5k6izv"
 					},
 					"AOI": {
-						"type": "string"
+						"type": "string",
+						"defaultValue": "-117.063550 32.749467 -116.999386 32.812946"
 					},
 					"PersistentVolumeClaim": {
 						"type": "string",
