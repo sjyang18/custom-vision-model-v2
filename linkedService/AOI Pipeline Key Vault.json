@@ -5,7 +5,7 @@
         "annotations": [],
         "type": "AzureKeyVault",
         "typeProperties": {
-            "baseUrl": "https://syansb31-pipeline-kv.vault.azure.net/"
+            "baseUrl": "https://syanpr37-pipeline-kv.vault.azure.net/"
         }
     }
 }

@@ -4,9 +4,9 @@
         "annotations": [],
         "type": "AzureBatch",
         "typeProperties": {
-            "batchUri": "https://__batch_account__.__location__.batch.azure.com",
+            "batchUri": "https://syanpr37orcbatchact.westus3.batch.azure.com",
             "poolName": "data-cpu-pool",
-            "accountName": "__batch_account__",
+            "accountName": "syanpr37orcbatchact",
             "linkedServiceName": {
                 "referenceName": "AOI Batch Storage",
                 "type": "LinkedServiceReference"

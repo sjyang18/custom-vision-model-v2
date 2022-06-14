@@ -5,7 +5,7 @@
         "annotations": [],
         "type": "AzureBlobFS",
         "typeProperties": {
-            "url": "https://rawdatapx2p7c.dfs.core.windows.net"
+            "url": "https://rawdataflgqmc.dfs.core.windows.net"
         },
         "connectVia": {
             "referenceName": "AutoResolveIntegrationRuntime",
