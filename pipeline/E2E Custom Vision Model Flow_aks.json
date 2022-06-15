@@ -62,6 +62,93 @@
                         }
                     }
                 }
+            },
+            {
+                "name": "Insert CV Object Detection Data Into DB",
+                "type": "SynapseNotebook",
+                "dependsOn": [
+                    {
+                        "activity": "Custom Vision Object Detection with AKS",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "notebook": {
+                        "referenceName": "Insert CV Object Detection Data Into DB Notebook Job",
+                        "type": "NotebookReference"
+                    },
+                    "parameters": {
+                        "storage_account_name": {
+                            "value": {
+                                "value": "@pipeline().parameters.StorageAccountName",
+                                "type": "Expression"
+                            },
+                            "type": "string"
+                        },
+                        "container_name": {
+                            "value": {
+                                "value": "@pipeline().parameters.Prefix",
+                                "type": "Expression"
+                            },
+                            "type": "string"
+                        },
+                        "folder_path": {
+                            "value": "pool-geolocation",
+                            "type": "string"
+                        },
+                        "key_vault_name": {
+                            "value": "syansb36-pipeline-kv",
+                            "type": "string"
+                        },
+                        "storage_account_key_secret_name": {
+                            "value": "GeospatialStorageAccountKey",
+                            "type": "string"
+                        },
+                        "linked_service_name": {
+                            "value": "AOI Pipeline Key Vault",
+                            "type": "string"
+                        },
+                        "db_password_secret_name": {
+                            "value": "PostgresAdminPassword",
+                            "type": "string"
+                        },
+                        "db_username": {
+                            "value": "syansb36_admin_user@syansb36-pg-server",
+                            "type": "string"
+                        },
+                        "db_host": {
+                            "value": "syansb36-pg-server.postgres.database.azure.com",
+                            "type": "string"
+                        },
+                        "db_name": {
+                            "value": "postgres",
+                            "type": "string"
+                        },
+                        "db_port": {
+                            "value": "5432",
+                            "type": "int"
+                        },
+                        "ssl_root_path": {
+                            "value": "/opt/src/BaltimoreCyberTrustRoot.crt.pem",
+                            "type": "string"
+                        }
+                    },
+                    "snapshot": true,
+                    "sparkPool": {
+                        "referenceName": "poolzl5nl4",
+                        "type": "BigDataPoolReference"
+                    }
+                }
             }
         ],
         "parameters": {
