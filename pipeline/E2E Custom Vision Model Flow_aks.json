@@ -1,5 +1,5 @@
 {
-    "name": "E2E Custom Vision Model Flow",
+    "name": "E2E Custom Vision Model Flow_aks",
     "properties": {
         "activities": [
             {
@@ -30,7 +30,7 @@
                 }
             },
             {
-                "name": "Custom Vision Object Detection",
+                "name": "Custom Vision Object Detection with AKS",
                 "type": "ExecutePipeline",
                 "dependsOn": [
                     {
@@ -43,7 +43,7 @@
                 "userProperties": [],
                 "typeProperties": {
                     "pipeline": {
-                        "referenceName": "Custom Vision Object Detection v2",
+                        "referenceName": "Custom Vision Object Detection v2_aks",
                         "type": "PipelineReference"
                     },
                     "waitOnCompletion": true,
@@ -52,20 +52,12 @@
                             "value": "@pipeline().parameters.Prefix",
                             "type": "Expression"
                         },
-                        "BatchName": {
-                            "value": "@pipeline().parameters.BatchAccountName",
-                            "type": "Expression"
-                        },
-                        "JobName": {
-                            "value": "@pipeline().parameters.BatchJobName",
-                            "type": "Expression"
-                        },
-                        "BatchLocation": {
-                            "value": "@pipeline().parameters.BatchLocation",
-                            "type": "Expression"
-                        },
                         "StorageAccountName": {
                             "value": "@pipeline().parameters.StorageAccountName",
+                            "type": "Expression"
+                        },
+                        "PersistentVolumeClaim": {
+                            "value": "@pipeline().parameters.PersistentVolumeClaim",
                             "type": "Expression"
                         }
                     }
@@ -76,7 +68,7 @@
                 "type": "SynapseNotebook",
                 "dependsOn": [
                     {
-                        "activity": "Custom Vision Object Detection",
+                        "activity": "Custom Vision Object Detection with AKS",
                         "dependencyConditions": [
                             "Succeeded"
                         ]
@@ -172,17 +164,9 @@
                 "type": "string",
                 "defaultValue": ""
             },
-            "BatchAccountName": {
+            "PersistentVolumeClaim": {
                 "type": "string",
-                "defaultValue": ""
-            },
-            "BatchJobName": {
-                "type": "string",
-                "defaultValue": ""
-            },
-            "BatchLocation": {
-                "type": "string",
-                "defaultValue": ""
+                "defaultValue": "syansb37-vision-fileshare"
             }
         },
         "variables": {
