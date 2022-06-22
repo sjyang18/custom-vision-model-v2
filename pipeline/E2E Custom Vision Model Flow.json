@@ -59,6 +59,10 @@
 						"PersistentVolumeClaim": {
 							"value": "@pipeline().parameters.PersistentVolumeClaim",
 							"type": "Expression"
+						},
+						"AksManagementRestApiURL": {
+							"value": "@pipeline().parameters.AksManagementRestApiURL",
+							"type": "Expression"
 						}
 					}
 				}
@@ -166,7 +170,8 @@
 				"defaultValue": "syansb42-vision-fileshare"
 			},
 			"AksManagementRestApiURL": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourcegroups/syansb42-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb42orcaks/runCommand?api-version=2022-02-01"
 			}
 		},
 		"variables": {
