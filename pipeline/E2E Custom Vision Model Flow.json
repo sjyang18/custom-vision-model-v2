@@ -1,5 +1,5 @@
 {
-    "name": "E2E Custom Vision Model Flow",
+    "name": "E2E Custom Vision Model Flow_aks",
     "properties": {
         "activities": [
             {
@@ -30,7 +30,7 @@
                 }
             },
             {
-                "name": "Custom Vision Object Detection",
+                "name": "Custom Vision Object Detection with AKS",
                 "type": "ExecutePipeline",
                 "dependsOn": [
                     {
@@ -43,7 +43,7 @@
                 "userProperties": [],
                 "typeProperties": {
                     "pipeline": {
-                        "referenceName": "Custom Vision Object Detection v2",
+                        "referenceName": "Custom Vision Object Detection v2_aks",
                         "type": "PipelineReference"
                     },
                     "waitOnCompletion": true,
@@ -52,20 +52,12 @@
                             "value": "@pipeline().parameters.Prefix",
                             "type": "Expression"
                         },
-                        "BatchName": {
-                            "value": "@pipeline().parameters.BatchAccountName",
-                            "type": "Expression"
-                        },
-                        "JobName": {
-                            "value": "@pipeline().parameters.BatchJobName",
-                            "type": "Expression"
-                        },
-                        "BatchLocation": {
-                            "value": "@pipeline().parameters.BatchLocation",
-                            "type": "Expression"
-                        },
                         "StorageAccountName": {
                             "value": "@pipeline().parameters.StorageAccountName",
+                            "type": "Expression"
+                        },
+                        "PersistentVolumeClaim": {
+                            "value": "@pipeline().parameters.PersistentVolumeClaim",
                             "type": "Expression"
                         }
                     }
@@ -76,7 +68,7 @@
                 "type": "SynapseNotebook",
                 "dependsOn": [
                     {
-                        "activity": "Custom Vision Object Detection",
+                        "activity": "Custom Vision Object Detection with AKS",
                         "dependencyConditions": [
                             "Succeeded"
                         ]
@@ -84,8 +76,8 @@
                 ],
                 "policy": {
                     "timeout": "7.00:00:00",
-                    "retry": 0,
-                    "retryIntervalInSeconds": 30,
+                    "retry": 3,
+                    "retryIntervalInSeconds": 60,
                     "secureOutput": false,
                     "secureInput": false
                 },
@@ -115,7 +107,7 @@
                             "type": "string"
                         },
                         "key_vault_name": {
-                            "value": "syansb37-pipeline-kv",
+                            "value": "syansb42-pipeline-kv",
                             "type": "string"
                         },
                         "storage_account_key_secret_name": {
@@ -131,11 +123,11 @@
                             "type": "string"
                         },
                         "db_username": {
-                            "value": "syansb37_admin_user@syansb37-pg-server",
+                            "value": "syansb42_admin_user@syansb42-pg-server",
                             "type": "string"
                         },
                         "db_host": {
-                            "value": "syansb37-pg-server.postgres.database.azure.com",
+                            "value": "syansb42-pg-server.postgres.database.azure.com",
                             "type": "string"
                         },
                         "db_name": {
@@ -153,7 +145,7 @@
                     },
                     "snapshot": true,
                     "sparkPool": {
-                        "referenceName": "pool6j3lvz",
+                        "referenceName": "pool5fas47",
                         "type": "BigDataPoolReference"
                     }
                 }
@@ -172,17 +164,9 @@
                 "type": "string",
                 "defaultValue": ""
             },
-            "BatchAccountName": {
+            "PersistentVolumeClaim": {
                 "type": "string",
-                "defaultValue": ""
-            },
-            "BatchJobName": {
-                "type": "string",
-                "defaultValue": ""
-            },
-            "BatchLocation": {
-                "type": "string",
-                "defaultValue": ""
+                "defaultValue": "syansb42-vision-fileshare"
             }
         },
         "variables": {

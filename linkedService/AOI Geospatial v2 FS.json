@@ -4,7 +4,7 @@
         "annotations": [],
         "type": "AzureFileStorage",
         "typeProperties": {
-            "connectionString": "DefaultEndpointsProtocol=https;AccountName=rawdatapt5qqo;EndpointSuffix=core.windows.net;",
+            "connectionString": "DefaultEndpointsProtocol=https;AccountName=rawdatavzj6hv;EndpointSuffix=core.windows.net;",
             "accountKey": {
                 "type": "AzureKeyVaultSecret",
                 "store": {
