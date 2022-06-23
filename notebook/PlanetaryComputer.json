@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "fe9f6a1a-79a2-4e56-a091-5a81c595e653"
+				"spark.autotune.trackingId": "0c2ee590-5093-42c0-8d04-1da11fe67e97"
 			}
 		},
 		"metadata": {
@@ -85,7 +85,7 @@
 					"\r\n",
 					"a. Python Packages Install through requirements.yaml file\r\n",
 					"\r\n",
-					"Upload the requirements.yaml below to your Spark Pool to install the required Python package pre-requisites\r\n",
+					"Upload the requirements.yaml below to your Spark Pool to install the required Python package pre-requisites by following the step in this [document](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/apache-spark-manage-python-packages)\r\n",
 					"\r\n",
 					"```yaml\r\n",
 					"name: demo\r\n",
