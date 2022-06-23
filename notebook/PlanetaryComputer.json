@@ -1,0 +1,473 @@
+{
+	"name": "PlanetaryComputer",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "poolbcpdic",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "56g",
+			"driverCores": 8,
+			"executorMemory": "56g",
+			"executorCores": 8,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "fe9f6a1a-79a2-4e56-a091-5a81c595e653"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourceGroups/syansb44-pipeline-rg/providers/Microsoft.Synapse/workspaces/syansb44-pipeline-syn-ws/bigDataPools/poolbcpdic",
+				"name": "poolbcpdic",
+				"type": "Spark",
+				"endpoint": "https://syansb44-pipeline-syn-ws.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/poolbcpdic",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.1",
+				"nodeCount": 3,
+				"cores": 8,
+				"memory": 56,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Simple Image Procurement and Processing from Planetary Computer STAC API\r\n",
+					"\r\n",
+					"In this notebook, we will run throught the steps involved in getting data from an area of interest that we define, downloading it and performing a simple geospatial transformation. "
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### i. Pre-requisites\r\n",
+					"\r\n",
+					"Before starting the steps in this Notebook, the following are a few things to setup:\r\n",
+					"\r\n",
+					"a. Storage Account (Gen 2)\r\n",
+					"\r\n",
+					"## ii. Setup\r\n",
+					"\r\n",
+					"This Notebook requires that your Synapse Workspace instance be setup with:\r\n",
+					"\r\n",
+					"a. Python Packages Install through requirements.yaml file\r\n",
+					"\r\n",
+					"Upload the requirements.yaml below to your Spark Pool to install the required Python package pre-requisites\r\n",
+					"\r\n",
+					"```yaml\r\n",
+					"name: demo\r\n",
+					"channels:\r\n",
+					"  - conda-forge\r\n",
+					"  - defaults\r\n",
+					"dependencies:\r\n",
+					"  - pystac-client\r\n",
+					"  - rich\r\n",
+					"  - planetary-computer\r\n",
+					"  - gdal\r\n",
+					"  - pip:\r\n",
+					"    - geopandas\r\n",
+					"```\r\n",
+					"\r\n",
+					"b. Create a Linked Service to the Storage Account by following the steps in this [document](https://docs.microsoft.com/en-us/azure/data-factory/concepts-linked-services?tabs=data-factory#create-linked-services)\r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Reading Data from the STAC API\r\n",
+					"\r\n",
+					"The Planetary Computer catalogs the datasets we host using the STAC (SpatioTempoaral Asset Catalog) specification. It provides a STAC API endpoint that can be used to search the datasets by space, time and more."
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"from pystac_client import Client\r\n",
+					"\r\n",
+					"catalog = Client.open(\"https://planetarycomputer.microsoft.com/api/stac/v1\")"
+				],
+				"execution_count": 99
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Mount Azure Storage Account\r\n",
+					"\r\n",
+					"Azure Synapse Analytics has two new mount/unmount  APIs in mssparkutils package, you can use to mount / attach remote storage (Blob, Gen2, Azure File Share) to all working nodes (driver node and workder nodes), after that, you can access data in storage as if they were one of the local file system with local file API.\r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from notebookutils import mssparkutils\r\n",
+					"\r\n",
+					"mssparkutils.fs.unmount(\"/test\")\r\n",
+					"mssparkutils.fs.mount( \r\n",
+					"    \"abfss://my-container@storage-account-name.dfs.core.windows.net\", \r\n",
+					"    \"/test\", \r\n",
+					"    {\"linkedService\":\"mygen2account\"} \r\n",
+					") \r\n",
+					""
+				],
+				"execution_count": 129
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Searching\r\n",
+					"\r\n",
+					"Using STAC API, you can search for assets meeting certain criteria. This might include the most common use cases for Geospatial data like spatial extent, date and time to other not so common attributes like cloud cover.\r\n",
+					"\r\n",
+					"In this example, we'll search for imagery from Landsat Collection 2 Level-2 area around Houston, Texas."
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"time_range = \"2021-12-01/2022-12-31\"\r\n",
+					"\r\n",
+					"#  Bounding box must be within (-180, -90, 180, 90)\r\n",
+					"bbox = [-95.42668576006342, 29.703952013356414, -95.27826526902945, 29.745286282512772]\r\n",
+					"\r\n",
+					"search = catalog.search(collections=[\"sentinel-2-l2a\"], bbox=bbox, datetime=time_range)\r\n",
+					"items = search.get_all_items()\r\n",
+					"\r\n",
+					"len(items)"
+				],
+				"execution_count": 101
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Each `pystac.Item <https://pystac.readthedocs.io/en/stable/api/pystac.html#pystac.Item>`__ in this ItemCollection includes all the metadata for that scene. STAC Items are GeoJSON features, and so can be loaded by libraries like geopandas."
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import geopandas\r\n",
+					"\r\n",
+					"df = geopandas.GeoDataFrame.from_features(items.to_dict(), crs=\"epsg:4326\")\r\n",
+					"df"
+				],
+				"execution_count": 102
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Next, we sort the items by cloudiness and select one with low cloudiness"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"selected_item = min(items, key=lambda item: item.properties[\"eo:cloud_cover\"])\r\n",
+					"selected_item"
+				],
+				"execution_count": 104
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Next, we will load the preview image from the selected item and display it using the Image package. This will shows us a preview of the area of interest."
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from IPython.display import Image\r\n",
+					"\r\n",
+					"Image(url=selected_item.assets[\"rendered_preview\"].href, width=500)"
+				],
+				"execution_count": 105
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import rich.table\r\n",
+					"\r\n",
+					"table = rich.table.Table(\"Asset Key\", \"Descripiption\")\r\n",
+					"for asset_key, asset in selected_item.assets.items():\r\n",
+					"    # print(f\"{asset_key:<25} - {asset.title}\")\r\n",
+					"    table.add_row(asset_key, asset.title)\r\n",
+					"\r\n",
+					"table"
+				],
+				"execution_count": 106
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Download the Raster Data\r\n",
+					"\r\n",
+					"GeoTiff cannot be downloaded from Planetary Computer using the link directly as it results in a 404. That's because the Planetary Computer uses Azure Blob Storage SAS Tokens to enable access to the data.\r\n",
+					"\r\n",
+					"To get a token for access, you can use the Planetary Computer's Data Authentication API. You can access that anonymously, or you can provide an API Key for higher rate limits and longer-lived token.s\r\n",
+					"\r\n",
+					"Using the SAS Token generated via Planetary Computer library, we download the data to the Storage Account for further processing."
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import planetary_computer\r\n",
+					"import requests\r\n",
+					"\r\n",
+					"jobId = mssparkutils.env.getJobId()\r\n",
+					"\r\n",
+					"signed_href = planetary_computer.sign(selected_item).assets[\"visual\"].href\r\n",
+					"\r\n",
+					"print(signed_href)\r\n",
+					"\r\n",
+					"response = requests.get(signed_href)\r\n",
+					"\r\n",
+					"open(\"/synfs/%s/test/sample_image.tif\" % jobId, 'wb').write(response.content)"
+				],
+				"execution_count": 130
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Read the Raster Data Information\r\n",
+					"\r\n",
+					"We start by reading the GDAL data information. To do this, we use gdal.info() method on the downloaded GeoTiff file. The gdalinfo will report on format driver used to access the file, raster size, coordinate system and so on.\r\n",
+					"\r\n",
+					"Raster data in the form of GeoTiff will be retrieve from the storage account, where we saved in the previous step by directly calling the STAC API. Since the Storage Account is mounted we will use the mounted file path that starts with the prefix `synfs`. Storage account is mounted under a jobId specific to the run.\r\n",
+					"\r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from osgeo import gdal  \r\n",
+					"\r\n",
+					"gdal.UseExceptions()\r\n",
+					"dataset_info = gdal.Info(\"/synfs/%s/test/sample_image.tif\" % jobId) \r\n",
+					"\r\n",
+					"print(dataset_info)"
+				],
+				"execution_count": 131
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Convert GeoTiff to PNG\r\n",
+					"\r\n",
+					"The conversion of GeoTiff to PNG can be performed using GDAL Translate. The gdal translate utility can be used to convert raster data between different formats, potentially performing some operations like subsettings, resampling and rescaling pixels in the process.\r\n",
+					"\r\n",
+					"The resultant PNG file is saved back to the Storage Account."
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"tiff_in = \"/synfs/%s/test/sample_image.tif\" % jobId\r\n",
+					"png_out = \"/synfs/%s/test/sample_image.png\" % jobId\r\n",
+					"\r\n",
+					"options = gdal.TranslateOptions(format='PNG')\r\n",
+					"\r\n",
+					"gdal.Translate(png_out, tiff_in, options=options)"
+				],
+				"execution_count": 132
+			}
+		]
+	}
+}
