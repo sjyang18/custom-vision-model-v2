@@ -157,7 +157,8 @@
 		],
 		"parameters": {
 			"Prefix": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "testme"
 			},
 			"StorageAccountName": {
 				"type": "string",
