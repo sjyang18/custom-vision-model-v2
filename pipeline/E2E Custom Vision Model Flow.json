@@ -30,7 +30,7 @@
                 }
             },
             {
-                "name": "Custom Vision Object Detection",
+                "name": "Custom Vision Object Detection with AKS",
                 "type": "ExecutePipeline",
                 "dependsOn": [
                     {
@@ -43,7 +43,7 @@
                 "userProperties": [],
                 "typeProperties": {
                     "pipeline": {
-                        "referenceName": "Custom Vision Object Detection v2",
+                        "referenceName": "Custom Vision Object Detection v2_aks",
                         "type": "PipelineReference"
                     },
                     "waitOnCompletion": true,
@@ -52,20 +52,16 @@
                             "value": "@pipeline().parameters.Prefix",
                             "type": "Expression"
                         },
-                        "BatchName": {
-                            "value": "@pipeline().parameters.BatchAccountName",
-                            "type": "Expression"
-                        },
-                        "JobName": {
-                            "value": "@pipeline().parameters.BatchJobName",
-                            "type": "Expression"
-                        },
-                        "BatchLocation": {
-                            "value": "@pipeline().parameters.BatchLocation",
-                            "type": "Expression"
-                        },
                         "StorageAccountName": {
                             "value": "@pipeline().parameters.StorageAccountName",
+                            "type": "Expression"
+                        },
+                        "AksManagementRestApiURL": {
+                            "value": "@pipeline().parameters.AksManagementRestApiURL",
+                            "type": "Expression"
+                        },
+                        "PersistentVolumeClaim": {
+                            "value": "@pipeline().parameters.PersistentVolumeClaim",
                             "type": "Expression"
                         }
                     }
@@ -76,7 +72,7 @@
                 "type": "SynapseNotebook",
                 "dependsOn": [
                     {
-                        "activity": "Custom Vision Object Detection",
+                        "activity": "Custom Vision Object Detection with AKS",
                         "dependencyConditions": [
                             "Succeeded"
                         ]
@@ -84,8 +80,8 @@
                 ],
                 "policy": {
                     "timeout": "7.00:00:00",
-                    "retry": 0,
-                    "retryIntervalInSeconds": 30,
+                    "retry": 3,
+                    "retryIntervalInSeconds": 60,
                     "secureOutput": false,
                     "secureInput": false
                 },
@@ -172,17 +168,13 @@
                 "type": "string",
                 "defaultValue": ""
             },
-            "BatchAccountName": {
+            "AksManagementRestApiURL": {
                 "type": "string",
-                "defaultValue": ""
+                "defaultValue": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourcegroups/syansb46-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb46orcaks/runCommand?api-version=2022-02-01"
             },
-            "BatchJobName": {
+            "PersistentVolumeClaim": {
                 "type": "string",
-                "defaultValue": ""
-            },
-            "BatchLocation": {
-                "type": "string",
-                "defaultValue": ""
+                "defaultValue": "syansb46-vision-fileshare"
             }
         },
         "variables": {
