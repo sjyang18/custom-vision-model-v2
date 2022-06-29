@@ -2,14 +2,14 @@
     "name": "Transforms",
     "properties": {
         "targetBigDataPool": {
-            "referenceName": "pool3prxhf",
+            "referenceName": "pooljrwlv5",
             "type": "BigDataPoolReference"
         },
         "requiredSparkVersion": "3.1",
         "language": "python",
         "jobProperties": {
             "name": "Transforms",
-            "file": "abfss://spark-jobs@synhns3prxhf.dfs.core.windows.net/customvision_transform/src/main.py",
+            "file": "abfss://spark-jobs@synhnsjrwlv5.dfs.core.windows.net/customvision_transform/src/main.py",
             "conf": {
                 "spark.dynamicAllocation.enabled": "false",
                 "spark.dynamicAllocation.minExecutors": "1",

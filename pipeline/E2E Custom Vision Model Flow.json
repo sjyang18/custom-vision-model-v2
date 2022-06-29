@@ -111,7 +111,7 @@
                             "type": "string"
                         },
                         "key_vault_name": {
-                            "value": "syansb46-pipeline-kv",
+                            "value": "syansb47-pipeline-kv",
                             "type": "string"
                         },
                         "storage_account_key_secret_name": {
@@ -127,11 +127,11 @@
                             "type": "string"
                         },
                         "db_username": {
-                            "value": "syansb46_admin_user@syansb46-pg-server",
+                            "value": "syansb47_admin_user@syansb47-pg-server",
                             "type": "string"
                         },
                         "db_host": {
-                            "value": "syansb46-pg-server.postgres.database.azure.com",
+                            "value": "syansb47-pg-server.postgres.database.azure.com",
                             "type": "string"
                         },
                         "db_name": {
@@ -149,7 +149,7 @@
                     },
                     "snapshot": true,
                     "sparkPool": {
-                        "referenceName": "pool3prxhf",
+                        "referenceName": "pooljrwlv5",
                         "type": "BigDataPoolReference"
                     }
                 }
@@ -170,11 +170,11 @@
             },
             "AksManagementRestApiURL": {
                 "type": "string",
-                "defaultValue": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourcegroups/syansb46-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb46orcaks/runCommand?api-version=2022-02-01"
+                "defaultValue": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourcegroups/syansb47-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb47orcaks/runCommand?api-version=2022-02-01"
             },
             "PersistentVolumeClaim": {
                 "type": "string",
-                "defaultValue": "syansb46-vision-fileshare"
+                "defaultValue": "syansb47-vision-fileshare"
             }
         },
         "variables": {

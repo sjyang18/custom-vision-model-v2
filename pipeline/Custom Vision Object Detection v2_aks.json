@@ -32,7 +32,7 @@
                         "referenceName": "Pool Geolocation",
                         "type": "SparkJobDefinitionReference"
                     },
-                    "file": "abfss://spark-jobs@synhns3prxhf.dfs.core.windows.net/pool_geolocation/src/main.py",
+                    "file": "abfss://spark-jobs@synhnsjrwlv5.dfs.core.windows.net/pool_geolocation/src/main.py",
                     "args": [
                         "--storage_account_name",
                         "@pipeline().parameters.StorageAccountName",
@@ -41,14 +41,14 @@
                         "--src_folder_name",
                         "detections",
                         "--key_vault_name",
-                        "syansb46-pipeline-kv",
+                        "syansb47-pipeline-kv",
                         "--storage_account_key_secret_name",
                         "GeospatialStorageAccountKey",
                         "--linked_service_name",
                         "AOI Pipeline Key Vault"
                     ],
                     "targetBigDataPool": {
-                        "referenceName": "pool3prxhf",
+                        "referenceName": "pooljrwlv5",
                         "type": "BigDataPoolReference"
                     },
                     "executorSize": "Medium",
@@ -887,11 +887,11 @@
             },
             "AksManagementRestApiURL": {
                 "type": "string",
-                "defaultValue": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourcegroups/syansb46-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb46orcaks/runCommand?api-version=2022-02-01"
+                "defaultValue": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourcegroups/syansb47-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb47orcaks/runCommand?api-version=2022-02-01"
             },
             "PersistentVolumeClaim": {
                 "type": "string",
-                "defaultValue": "syansb46-vision-fileshare"
+                "defaultValue": "syansb47-vision-fileshare"
             }
         },
         "variables": {
