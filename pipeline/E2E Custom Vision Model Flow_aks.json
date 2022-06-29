@@ -42,6 +42,10 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Custom Vision Object Detection v2_aks",
+						"type": "PipelineReference"
+					},
 					"waitOnCompletion": true,
 					"parameters": {
 						"Prefix": {
