@@ -1,110 +1,102 @@
 {
-    "name": "E2E Custom Vision Model Flow",
-    "properties": {
-        "activities": [
-            {
-                "name": "Transforms",
-                "type": "ExecutePipeline",
-                "dependsOn": [],
-                "userProperties": [],
-                "typeProperties": {
-                    "pipeline": {
-                        "referenceName": "Custom Vision Model Transforms v2",
-                        "type": "PipelineReference"
-                    },
-                    "waitOnCompletion": true,
+          "name": "E2E Custom Vision Model Flow",
+          "properties": {
+                    "activities": [
+                              {
+                                        "name": "Transforms",
+                                        "type": "ExecutePipeline",
+                                        "dependsOn": [],
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                                  "pipeline": {
+                                                            "referenceName": "Custom Vision Model Transforms v2",
+                                                            "type": "PipelineReference"
+                                                  },
+                                                  "waitOnCompletion": true,
+                                                  "parameters": {
+                                                            "Prefix": {
+                                                                      "value": "@pipeline().parameters.Prefix",
+                                                                      "type": "Expression"
+                                                            },
+                                                            "StorageAccountName": {
+                                                                      "value": "@pipeline().parameters.StorageAccountName",
+                                                                      "type": "Expression"
+                                                            },
+                                                            "AOI": {
+                                                                      "value": "@pipeline().parameters.AOI",
+                                                                      "type": "Expression"
+                                                            }
+                                                  }
+                                        }
+                              },
+                              {
+                                        "name": "Custom Vision Object Detection with AKS",
+                                        "type": "ExecutePipeline",
+                                        "dependsOn": [
+                                                  {
+                                                            "activity": "Transforms",
+                                                            "dependencyConditions": [
+                                                                      "Succeeded"
+                                                            ]
+                                                  }
+                                        ],
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                                  "pipeline": {
+                                                            "referenceName": "Custom Vision Object Detection v2_aks",
+                                                            "type": "PipelineReference"
+                                                  },
+                                                  "waitOnCompletion": true,
+                                                  "parameters": {
+                                                            "Prefix": {
+                                                                      "value": "@pipeline().parameters.Prefix",
+                                                                      "type": "Expression"
+                                                            },
+                                                            "StorageAccountName": {
+                                                                      "value": "@pipeline().parameters.StorageAccountName",
+                                                                      "type": "Expression"
+                                                            },
+                                                            "AksManagementRestApiURL": {
+                                                                      "value": "@pipeline().parameters.AksManagementRestApiURL",
+                                                                      "type": "Expression"
+                                                            },
+                                                            "PersistentVolumeClaim": {
+                                                                      "value": "@pipeline().parameters.PersistentVolumeClaim",
+                                                                      "type": "Expression"
+                                                            }
+                                                  }
+                                        }
+                              }
+                    ],
                     "parameters": {
-                        "Prefix": {
-                            "value": "@pipeline().parameters.Prefix",
-                            "type": "Expression"
-                        },
-                        "StorageAccountName": {
-                            "value": "@pipeline().parameters.StorageAccountName",
-                            "type": "Expression"
-                        },
-                        "AOI": {
-                            "value": "@pipeline().parameters.AOI",
-                            "type": "Expression"
-                        }
-                    }
-                }
-            },
-            {
-                "name": "Custom Vision Object Detection",
-                "type": "ExecutePipeline",
-                "dependsOn": [
-                    {
-                        "activity": "Transforms",
-                        "dependencyConditions": [
-                            "Succeeded"
-                        ]
-                    }
-                ],
-                "userProperties": [],
-                "typeProperties": {
-                    "pipeline": {
-                        "referenceName": "Custom Vision Object Detection v2",
-                        "type": "PipelineReference"
+                              "Prefix": {
+                                        "type": "string",
+                                        "defaultValue": ""
+                              },
+                              "StorageAccountName": {
+                                        "type": "string",
+                                        "defaultValue": ""
+                              },
+                              "AOI": {
+                                        "type": "string",
+                                        "defaultValue": ""
+                              },
+                              "AksManagementRestApiURL": {
+                                        "type": "string",
+                                        "defaultValue": "https://management.azure.com/subscriptions/18345cbb-6912-4c9a-9054-6fe5d1c93a63/resourcegroups/syansb48-orc-rg/providers/Microsoft.ContainerService/managedClusters/syansb48orcaks/runCommand?api-version=2022-02-01"
+                              },
+                              "PersistentVolumeClaim": {
+                                        "type": "string",
+                                        "defaultValue": "syansb48-vision-fileshare"
+                              }
                     },
-                    "waitOnCompletion": true,
-                    "parameters": {
-                        "Prefix": {
-                            "value": "@pipeline().parameters.Prefix",
-                            "type": "Expression"
-                        },
-                        "BatchName": {
-                            "value": "@pipeline().parameters.BatchAccountName",
-                            "type": "Expression"
-                        },
-                        "JobName": {
-                            "value": "@pipeline().parameters.BatchJobName",
-                            "type": "Expression"
-                        },
-                        "BatchLocation": {
-                            "value": "@pipeline().parameters.BatchLocation",
-                            "type": "Expression"
-                        },
-                        "StorageAccountName": {
-                            "value": "@pipeline().parameters.StorageAccountName",
-                            "type": "Expression"
-                        }
-                    }
-                }
-            }
-        ],
-        "parameters": {
-            "Prefix": {
-                "type": "string",
-                "defaultValue": ""
-            },
-            "StorageAccountName": {
-                "type": "string",
-                "defaultValue": ""
-            },
-            "AOI": {
-                "type": "string",
-                "defaultValue": ""
-            },
-            "BatchAccountName": {
-                "type": "string",
-                "defaultValue": ""
-            },
-            "BatchJobName": {
-                "type": "string",
-                "defaultValue": ""
-            },
-            "BatchLocation": {
-                "type": "string",
-                "defaultValue": ""
-            }
-        },
-        "variables": {
-            "Storage_Account_Conn_String": {
-                "type": "String"
-            }
-        },
-        "annotations": [],
-        "lastPublishTime": "2022-03-06T05:42:39Z"
-    },
-    "type": "Microsoft.Synapse/workspaces/pipelines"
+                    "variables": {
+                              "Storage_Account_Conn_String": {
+                                        "type": "String"
+                              }
+                    },
+                    "annotations": [],
+                    "lastPublishTime": "2022-03-06T05:42:39Z"
+          },
+          "type": "Microsoft.Synapse/workspaces/pipelines"
 }
